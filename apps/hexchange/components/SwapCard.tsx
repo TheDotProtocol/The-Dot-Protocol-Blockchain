@@ -5,11 +5,12 @@ import { ethers } from "ethers";
 import { HEX_ADDRESSES, ROUTER_ABI, ERC20_ABI } from "@/config/contracts";
 
 const TOKENS = [
-  { symbol: "3DOT", name: "Dot Protocol Coin", icon: "🔴", address: "0x84ed5E46280c6911551925329C3af6c58e4ced56", decimals: 18, color: "from-red-500 to-orange-500" },
-  { symbol: "USDT", name: "Mock Tether USD", icon: "🟢", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6, color: "from-green-500 to-emerald-500" },
-  { symbol: "BTC", name: "Mock Bitcoin", icon: "🔵", address: "0x5dDB6171136b2A922f7fB262baf485a3865B5Ca2", decimals: 8, color: "from-blue-500 to-cyan-500" },
-  { symbol: "BNB", name: "Mock BNB", icon: "🟣", address: "0x0670Dceaf0f6696eB423531fA2a2c4aBc94FBdB3", decimals: 18, color: "from-yellow-500 to-amber-500" },
   { symbol: "TDOT", name: "Test DOT", icon: "🟡", address: "0x542E95FD423962505EBfb279C1361351507A0185", decimals: 18, color: "from-yellow-400 to-orange-400" },
+  { symbol: "USDT", name: "Tether USD", icon: "🟢", address: "0xBb9b20451FB824eC45B3450306d7c1AC3Cb8d10d", decimals: 6, color: "from-green-500 to-emerald-500" },
+  { symbol: "USDC", name: "USD Coin", icon: "🔵", address: "0xBF098d979E901A4D2A6D5643579C1344b3Dce2a2", decimals: 6, color: "from-blue-500 to-cyan-500" },
+  { symbol: "BTC", name: "Bitcoin", icon: "🟠", address: "0x9df97D69D2CD5bE99c687abB25566fB1425Cc838", decimals: 8, color: "from-orange-500 to-yellow-500" },
+  { symbol: "BNB", name: "Binance Coin", icon: "🟣", address: "0x415994C933D716013f966B758bA34D71D4e77C12", decimals: 18, color: "from-yellow-500 to-amber-500" },
+  { symbol: "XRP", name: "Ripple", icon: "⚪", address: "0x92bd55Ff308D2b65770789bE246C77F1FBE0D864", decimals: 6, color: "from-gray-400 to-gray-600" },
 ];
 
 function TokenSelector({ selected, onSelect, label }: { selected: typeof TOKENS[0]; onSelect: (t: typeof TOKENS[0]) => void; label: string }) {

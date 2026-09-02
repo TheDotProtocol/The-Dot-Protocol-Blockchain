@@ -1,37 +1,19 @@
 {
-  "config": {
-    "chainId": 1546,
-    "homesteadBlock": 0,
-    "eip150Block": 0,
-    "eip155Block": 0,
-    "eip158Block": 0,
-    "byzantiumBlock": 0,
-    "constantinopleBlock": 0,
-    "petersburgBlock": 0,
-    "istanbulBlock": 0,
-    "muirGlacierBlock": 0,
-    "berlinBlock": 0,
-    "londonBlock": 0,
-    "clique": {
-      "period": 0,
-      "epoch": 30000
-    },
-    "qbft": {
-      "blockperiodseconds": 2,
-      "epochlength": 30000,
-      "requesttimeoutseconds": 4
+  "config" : {
+    "chainId" : 1546,
+    "berlinBlock" : 0,
+    "qbft" : {
+      "blockperiodseconds" : 2,
+      "epochlength" : 30000,
+      "requesttimeoutseconds" : 10
     }
   },
-  "nonce": "0x0",
-  "timestamp": "0x0",
-  "gasLimit": "0x1fffffffffffff",
-  "difficulty": "0x1",
-  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "alloc": {
-    "0xAA0bf607b14109A01e94a30674a01e2BA22e9694": {
-      "balance": "0x200000000000000000000000000000000000000000000000000000000000000"
-    }
-  },
-  "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000e7fc24757640cbd0a445c4b3ff3430d7e523e6b6ae9bf0de20f11f0ae6b5213ac892eb9929b471274e328f1db3f08e35880719b48a05a37c02eb7503559f584e1002581d34802396766b8c649aee529da4a35068ba0ee68c11ebae35d01eaf213d7d5e15f19215493a8b6ff31cda67a5dbf6b2bbac8e5547c21aff8a89e298ea2efb8cbfc8848b17b2591fc6"
+  "nonce" : "0x0",
+  "timestamp" : "0x0",
+  "gasLimit" : "0x1c9c380",
+  "difficulty" : "0x1",
+  "mixHash" : "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "coinbase" : "0x0000000000000000000000000000000000000000",
+  "alloc" : { },
+  "extraData" : "0xf8b9a00000000000000000000000000000000000000000000000000000000000000000f89394d12793e9a50b300f341f24ab47ce911526b774c6945785406b2be25c48a833533f92f582ff8bedd4f894bef69c164f7ede52dc82a0968eefc3ccd2261f8294ff68e5598fa968b8c022596ca9addf6540251e4b94f8b7ac45280d0cb3cac8cbcd8460dd56fe8b429c940626e30d65044686990044df46f085fd8d34a2be9447da1683771490a57cfb90cadac4bb2f1c17ed59c080c0"
 }

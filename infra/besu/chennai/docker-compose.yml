@@ -1,0 +1,230 @@
+# Dot Protocol Chennai Testnet — 7 QBFT validators (nodes 1-2 are master validators)
+# Prerequisites: run `npm run chain:generate` first
+# Start: npm run chain:chennai:up
+
+x-besu: &besu-defaults
+  image: hyperledger/besu:25.1.0
+  restart: unless-stopped
+
+services:
+  validator1:
+    <<: *besu-defaults
+    container_name: chennai-validator1
+    hostname: validator1
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.11
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "30303:30303"
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node1:/keys:ro
+      - validator1-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --rpc-ws-enabled
+      --rpc-ws-host=0.0.0.0
+      --rpc-ws-port=8546
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.11
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator2:
+    <<: *besu-defaults
+    container_name: chennai-validator2
+    hostname: validator2
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.12
+    ports:
+      - "8555:8545"
+      - "30313:30303"
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node2:/keys:ro
+      - validator2-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.12
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator3:
+    <<: *besu-defaults
+    container_name: chennai-validator3
+    hostname: validator3
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.13
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node3:/keys:ro
+      - validator3-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.13
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator4:
+    <<: *besu-defaults
+    container_name: chennai-validator4
+    hostname: validator4
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.14
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node4:/keys:ro
+      - validator4-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.14
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator5:
+    <<: *besu-defaults
+    container_name: chennai-validator5
+    hostname: validator5
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.15
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node5:/keys:ro
+      - validator5-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.15
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator6:
+    <<: *besu-defaults
+    container_name: chennai-validator6
+    hostname: validator6
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.16
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node6:/keys:ro
+      - validator6-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.16
+      --min-gas-price=0
+      --sync-mode=FULL
+
+  validator7:
+    <<: *besu-defaults
+    container_name: chennai-validator7
+    hostname: validator7
+    networks:
+      chennai:
+        ipv4_address: 172.28.0.17
+    volumes:
+      - ./genesis.json:/config/genesis.json:ro
+      - ./networkFiles/static-nodes.json:/config/static-nodes.json:ro
+      - ./networkFiles/keys/node7:/keys:ro
+      - validator7-data:/var/lib/besu
+    command: >
+      --data-path=/var/lib/besu
+      --genesis-file=/config/genesis.json
+      --static-nodes-file=/config/static-nodes.json
+      --node-private-key-file=/keys/key
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,WEB3,QBFT
+      --rpc-http-cors-origins=*
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --host-allowlist=*
+      --p2p-port=30303
+      --p2p-host=172.28.0.17
+      --min-gas-price=0
+      --sync-mode=FULL
+
+networks:
+  chennai:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  validator1-data:
+  validator2-data:
+  validator3-data:
+  validator4-data:
+  validator5-data:
+  validator6-data:
+  validator7-data:

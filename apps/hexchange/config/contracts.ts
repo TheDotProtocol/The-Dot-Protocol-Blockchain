@@ -16,12 +16,14 @@ export const HEX_ADDRESSES = {
   },
 } as const;
 
-// Mock tokens deployed on Dot Protocol chains (via deploy-liquidity.js)
+// Mock tokens deployed on Dot Protocol chains
 export const MOCK_TOKENS: Record<number, { symbol: string; address: string; decimals: number }[]> = {
   1545: [
-    { symbol: "USDT", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6 },
-    { symbol: "BTC", address: "0x5dDB6171136b2A922f7fB262baf485a3865B5Ca2", decimals: 8 },
-    { symbol: "BNB", address: "0x0670Dceaf0f6696eB423531fA2a2c4aBc94FBdB3", decimals: 18 },
+    { symbol: "USDT", address: "0xBb9b20451FB824eC45B3450306d7c1AC3Cb8d10d", decimals: 6 },
+    { symbol: "USDC", address: "0xBF098d979E901A4D2A6D5643579C1344b3Dce2a2", decimals: 6 },
+    { symbol: "BTC", address: "0x9df97D69D2CD5bE99c687abB25566fB1425Cc838", decimals: 8 },
+    { symbol: "BNB", address: "0x415994C933D716013f966B758bA34D71D4e77C12", decimals: 18 },
+    { symbol: "XRP", address: "0x92bd55Ff308D2b65770789bE246C77F1FBE0D864", decimals: 6 },
   ],
   1546: [
     { symbol: "USDT", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6 },

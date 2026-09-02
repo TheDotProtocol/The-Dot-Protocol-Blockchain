@@ -1,5 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const DEPLOYER_KEY = process.env.DEPLOYER_PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -16,12 +20,12 @@ const config: HardhatUserConfig = {
     chennai: {
       url: process.env.CHENNAI_RPC || "http://127.0.0.1:8545",
       chainId: 1545,
-      accounts: process.env.DEPLOYER_KEY ? [process.env.DEPLOYER_KEY] : [],
+      accounts: DEPLOYER_KEY ? [DEPLOYER_KEY] : [],
     },
     mainnet: {
       url: process.env.MAINNET_RPC || "http://127.0.0.1:9545",
       chainId: 1546,
-      accounts: process.env.DEPLOYER_KEY ? [process.env.DEPLOYER_KEY] : [],
+      accounts: DEPLOYER_KEY ? [DEPLOYER_KEY] : [],
     },
   },
   paths: {

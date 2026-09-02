@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dot Protocol — 3DOT Tokenomics</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e17; color: #e5e7eb; line-height: 1.7; }
+  .container { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+  h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 8px; }
+  h1 span { color: #f97316; }
+  .subtitle { font-size: 1.1rem; color: #9ca3af; margin-bottom: 48px; border-bottom: 1px solid #1f2937; padding-bottom: 24px; }
+  h2 { font-size: 1.5rem; font-weight: 700; color: #f97316; margin: 48px 0 20px; }
+  h3 { font-size: 1.15rem; font-weight: 600; color: #d1d5db; margin: 32px 0 12px; }
+  p, li { font-size: 0.95rem; color: #9ca3af; margin-bottom: 12px; }
+  strong { color: #e5e7eb; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0 32px; }
+  th { text-align: left; padding: 12px 16px; background: #1f2937; color: #f97316; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #f97316; }
+  td { padding: 12px 16px; border-bottom: 1px solid #1f2937; font-size: 0.9rem; color: #d1d5db; }
+  tr:hover td { background: #111827; }
+  .highlight { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 24px; margin: 24px 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+  .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; }
+  .card-title { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .card-value { font-size: 1.5rem; font-weight: 700; color: #f97316; }
+  .card-sub { font-size: 0.85rem; color: #9ca3af; margin-top: 4px; }
+  .warning { background: #78350f; border: 1px solid #f97316; border-radius: 12px; padding: 20px; margin: 24px 0; }
+  .warning strong { color: #fbbf24; }
+  .pie { display: flex; gap: 24px; margin: 24px 0; flex-wrap: wrap; }
+  .pie-item { display: flex; align-items: center; gap: 10px; }
+  .pie-dot { width: 16px; height: 16px; border-radius: 50%; }
+  .pie-label { font-size: 0.85rem; color: #d1d5db; }
+  .pie-pct { font-weight: 700; color: #f97316; margin-left: 4px; }
+  @media print { body { background: #fff; color: #1f2937; } h1 span { color: #ea580c; } h2 { color: #ea580c; } th { color: #ea580c; background: #f3f4f6; } td { color: #374151; border-color: #e5e7eb; } .highlight, .card { background: #f9fafb; border-color: #e5e7eb; } .card-value { color: #ea580c; } p, li { color: #6b7280; } strong { color: #111827; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>3DOT</span> Tokenomics</h1>
+<p class="subtitle">Dot Protocol — Token Economy & Distribution Model<br>September 2026 · Internal Draft v1.0</p>
+
+<!-- Key Metrics -->
+<div class="grid">
+  <div class="card">
+    <div class="card-title">Token Name</div>
+    <div class="card-value">Dot Protocol Coin</div>
+    <div class="card-sub">Symbol: 3DOT · Standard: DPC20</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Total Supply</div>
+    <div class="card-value">1,000,000,000,000</div>
+    <div class="card-sub">1 Trillion tokens (hard cap)</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Decimals</div>
+    <div class="card-value">18</div>
+    <div class="card-sub">Same as ETH / ERC-20 standard</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Consensus</div>
+    <div class="card-value">QBFT PoA</div>
+    <div class="card-sub">Hyperledger Besu · 2s blocks</div>
+  </div>
+</div>
+
+<h2>1. Distribution Allocation</h2>
+<p>3DOT follows a <strong>5-bucket model</strong> designed for long-term ecosystem sustainability, community ownership, and institutional credibility.</p>
+
+<table>
+  <tr><th>Bucket</th><th>Allocation</th><th>Tokens</th><th>Unlock Schedule</th><th>Purpose</th></tr>
+  <tr><td><strong>Ecosystem & Community</strong></td><td>40%</td><td>400,000,000,000</td><td>8-year linear vest</td><td>Grants, liquidity mining, staking rewards, developer incentives, airdrops</td></tr>
+  <tr><td><strong>Team & Contributors</strong></td><td>25%</td><td>250,000,000,000</td><td>1-year cliff, 4-year linear vest</td><td>Core team, advisors, future hires. Aligned with long-term success</td></tr>
+  <tr><td><strong>Treasury & Reserves</strong></td><td>15%</td><td>150,000,000,000</td><td>Controlled by governance</td><td>Emergency reserves, strategic partnerships, M&A, stabilisation fund</td></tr>
+  <tr><td><strong>Presale & Public Sale</strong></td><td>10%</td><td>100,000,000,000</td><td>20% TGE, 6-month linear vest</td><td>Early Bird, Seed, and Public sale phases</td></tr>
+  <tr><td><strong>Staking & Validation</strong></td><td>10%</td><td>100,000,000,000</td><td>8-year linear emission</td><td>Validator rewards, network security, QBFT consensus incentives</td></tr>
+</table>
+
+<div class="pie">
+  <div class="pie-item"><div class="pie-dot" style="background:#f97316"></div><div class="pie-label">Ecosystem<span class="pie-pct">40%</span></div></div>
+  <div class="pie-item"><div class="pie-dot" style="background:#3b82f6"></div><div class="pie-label">Team<span class="pie-pct">25%</span></div></div>
+  <div class="pie-item"><div class="pie-dot" style="background:#10b981"></div><div class="pie-label">Treasury<span class="pie-pct">15%</span></div></div>
+  <div class="pie-item"><div class="pie-dot" style="background:#8b5cf6"></div><div class="pie-label">Presale<span class="pie-pct">10%</span></div></div>
+  <div class="pie-item"><div class="pie-dot" style="background:#f59e0b"></div><div class="pie-label">Staking<span class="pie-pct">10%</span></div></div>
+</div>
+
+<h2>2. Presale Structure</h2>
+<p>The presale uses a <strong>3-phase model</strong> with increasing prices to reward early participants.</p>
+
+<table>
+  <tr><th>Phase</th><th>Price per 3DOT</th><th>Allocation</th><th>Duration</th><th>Min Buy</th><th>Max Buy</th><th>Vesting</th></tr>
+  <tr><td><strong>Early Bird</strong></td><td>$0.005</td><td>20B tokens (2%)</td><td>7 days</td><td>$100</td><td>$1,000</td><td>20% TGE, 6mo linear</td></tr>
+  <tr><td><strong>Seed</strong></td><td>$0.008</td><td>30B tokens (3%)</td><td>7 days</td><td>$200</td><td>$5,000</td><td>20% TGE, 6mo linear</td></tr>
+  <tr><td><strong>Public</strong></td><td>$0.01</td><td>50B tokens (5%)</td><td>7 days</td><td>$100</td><td>$10,000</td><td>20% TGE, 6mo linear</td></tr>
+</table>
+
+<div class="highlight">
+  <p><strong>Presale Hard Cap:</strong> $500,000 total raised across all phases</p>
+  <p><strong>Token Claim:</strong> 20% available at Token Generation Event (TGE), remaining 80% vests linearly over 6 months</p>
+  <p><strong>Accepted Payment:</strong> ETH, USDT, BNB (via HexchangePresale contract)</p>
+</div>
+
+<h2>3. Pricing Model</h2>
+
+<div class="warning">
+  <strong>⚠ Decision Required: The pricing model below conflicts with other references in the project.</strong>
+  <p>This document proposes a unified pricing model. The existing codebase references three different prices:</p>
+  <ul>
+    <li><strong>Presale preview:</strong> $0.50 per token (whitelist, $2.5M–$10M raise range)</li>
+    <li><strong>ICO page:</strong> Early Bird $0.005 / Seed $0.008 / Public $0.01</li>
+    <li><strong>Hexchange AMM:</strong> 3DOT/USDT pool seeded at 1:1 ($1.00)</li>
+  </ul>
+  <p style="margin-top: 12px;">These must be reconciled before any public-facing materials go live.</p>
+</div>
+
+<h3>Recommended Pricing Model</h3>
+<table>
+  <tr><th>Context</th><th>Proposed Price</th><th>Rationale</th></tr>
+  <tr><td><strong>Presale (all phases)</strong></td><td>$0.005 – $0.01</td><td>Low entry price creates early community. 10B–50B tokens sold at $0.01 = $100K–$500K raise.</td></tr>
+  <tr><td><strong>Hexchange launch price</strong></td><td>$0.01</td><td>AMM pool seeded at 100 3DOT = 1 USDT (0.01 per token). Aligns with Public sale price.</td></tr>
+  <tr><td><strong>Stabilisation target</strong></td><td>$0.01 (initial) → $0.10 (growth)</td><td>Stabilisation contract targets 10x over 18 months via collateral ratio adjustments.</td></tr>
+</table>
+
+<h3>Why NOT $0.50 or $1.00 for presale?</h3>
+<ul>
+  <li>At $0.50 per token × 1T supply = <strong>$500B market cap</strong> — unrealistically high for a new L1</li>
+  <li>At $1.00 per token × 1T supply = <strong>$1T market cap</strong> — exceeds Bitcoin's ATH</li>
+  <li>The $0.005–$0.01 range gives room for 10x–100x growth and aligns with realistic L1 launch valuations</li>
+  <li>Presale participants receive meaningful token allocations at accessible prices</li>
+</ul>
+
+<h2>4. Token Utility</h2>
+
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr><td><strong>Gas Fees</strong></td><td>3DOT is the native gas token on Dot Protocol chains (Chennai + Mainnet)</td></tr>
+  <tr><td><strong>Staking</strong></td><td>Validator staking for QBFT consensus. Stakers earn 3DOT emissions.</td></tr>
+  <tr><td><strong>Governance</strong></td><td>Token-weighted voting on protocol upgrades, treasury allocation, parameter changes</td></tr>
+  <tr><td><strong>AMM LP</strong></td><td>Provide liquidity on Hexchange to earn trading fees and liquidity mining rewards</td></tr>
+  <tr><td><strong>Escrow collateral</strong></td><td>Used as collateral in P2P trades via HexchangeEscrow</td></tr>
+  <tr><td><strong>Stabilisation</strong></td><td>Lock collateral to mint borrowed 3DOT (CDP-style) for leveraged positions</td></tr>
+  <tr><td><strong>Bridge</strong></td><td>Cross-chain transfers via lock/mint bridge to Ethereum, BSC, TRON</td></tr>
+  <tr><td><strong>Presale claim</strong></td><td>Presale tokens are claimable via HexchangePresale with 20% TGE + 6mo vest</td></tr>
+</table>
+
+<h2>5. Vesting Schedule</h2>
+
+<table>
+  <tr><th>Bucket</th><th>Total Tokens</th><th>TGE Unlock</th><th>Vesting Period</th><th>Cliff</th><th>Monthly Unlock</th></tr>
+  <tr><td>Ecosystem (40%)</td><td>400B</td><td>0%</td><td>96 months (8 years)</td><td>None</td><td>~4.17B/month</td></tr>
+  <tr><td>Team (25%)</td><td>250B</td><td>0%</td><td>48 months (4 years)</td><td>12 months</td><td>~6.51B/month (after cliff)</td></tr>
+  <tr><td>Treasury (15%)</td><td>150B</td><td>0%</td><td>Governance-controlled</td><td>N/A</td><td>Discretionary</td></tr>
+  <tr><td>Presale (10%)</td><td>100B</td><td>20%</td><td>6 months</td><td>None</td><td>~13.33B/month</td></tr>
+  <tr><td>Staking (10%)</td><td>100B</td><td>0%</td><td>96 months (8 years)</td><td>None</td><td>~1.04B/month</td></tr>
+</table>
+
+<h2>6. On-Chain Contracts</h2>
+
+<table>
+  <tr><th>Contract</th><th>Chennai (1545)</th><th>Mainnet (1546)</th><th>Purpose</th></tr>
+  <tr><td>DPC20</td><td>0x542E…0185</td><td>0x84ed…ed56</td><td>Native token — mint, pause, rebase</td></tr>
+  <tr><td>HexchangeFactory</td><td>0xeABAb7…e3e7</td><td>0x435d…1931</td><td>AMM pair creation</td></tr>
+  <tr><td>HexchangeRouter</td><td>0x4C0b…373B</td><td>0x436A…8667</td><td>Swap execution, liquidity</td></tr>
+  <tr><td>HexchangeEscrow</td><td>0xeA86…04C</td><td>0xde45…F126</td><td>P2P trading escrow</td></tr>
+  <tr><td>HexchangePresale</td><td>0x44Ca…92eA</td><td>0xd28f…7a4</td><td>Presale purchases and vesting</td></tr>
+  <tr><td>Oracle</td><td>0x435d…1931</td><td>0xAE7D…eeb</td><td>Price feeds</td></tr>
+  <tr><td>Stabilization</td><td>0x436A…8667</td><td>0x2000…a552</td><td>Collateral vault</td></tr>
+  <tr><td>Governance</td><td>0xde45…F126</td><td>0x002f…c81</td><td>On-chain proposals</td></tr>
+  <tr><td>Bridge</td><td>0xd28f…7a4</td><td>0xe908…E13</td><td>Cross-chain lock/mint</td></tr>
+</table>
+
+<h2>7. Key Risks & Mitigations</h2>
+
+<table>
+  <tr><th>Risk</th><th>Mitigation</th></tr>
+  <tr><td>Price manipulation at launch</td><td>Bootstrap initial liquidity from Treasury. Use Oracle for price feeds.</td></tr>
+  <tr><td>Team dumping</td><td>12-month cliff + 4-year vest on 25% team allocation. Multisig treasury.</td></tr>
+  <tr><td>Smart contract exploits</td><td>Full audit before mainnet. Bug bounty program. Circuit breakers (pause).</td></tr>
+  <tr><td>Low presale uptake</td><td>Flexible phase pricing. Whitelist-gated early access to build FOMO.</td></tr>
+  <tr><td>Regulatory risk</td><td>Token classified as utility. KYC for large presale purchases. Jurisdictional compliance.</td></tr>
+</table>
+
+<h2>8. Next Steps</h2>
+
+<ol>
+  <li><strong>Confirm pricing model</strong> — Choose between $0.005–$0.01 (this doc) or the existing $0.50 whitelist price</li>
+  <li><strong>Finalize tokenomics allocation</strong> — Confirm 5-bucket model (40/25/15/10/10) vs older 7-bucket model</li>
+  <li><strong>Update all UI references</strong> — Align presale, ICO, and Hexchange pages to single pricing</li>
+  <li><strong>Contract audit</strong> — Engage auditor for DPC20, Router, Escrow, Presale</li>
+  <li><strong>Deploy to testnet</strong> — Verify all contracts on Chennai (1545) with Hardhat</li>
+  <li><strong>Mainnet launch</strong> — Deploy to 1546 with verified contracts and public RPC</li>
+</ol>
+
+<div class="highlight" style="margin-top: 48px; text-align: center;">
+  <p style="color: #6b7280; font-size: 0.85rem;">Document prepared September 2026 · The Dot Protocol Co., Ltd. Thailand — AR Holdings Group Corp</p>
+  <p style="color: #4b5563; font-size: 0.8rem; margin-top: 8px;">This document is for internal decision-making. Not financial advice.</p>
+</div>
+
+</div>
+</body>
+</html>

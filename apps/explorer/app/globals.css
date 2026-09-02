@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0b0d;
+  --foreground: #e4e4e7;
+  --primary: #f7931a;
+}
+
+@theme inline {
+  --color-primary: #f7931a;
+  --color-primary-300: #f9d3a1;
+  --color-primary-600: #de8417;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.explorer-bg {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -20%, rgba(247, 147, 26, 0.12), transparent),
+    #0a0b0d;
+}
+
+.glass {
+  background: rgba(20, 21, 24, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}

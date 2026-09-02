@@ -1,0 +1,61 @@
+module.exports = {
+  apps: [
+    {
+      name: "tdp-api",
+      cwd: "./apps/hexchange-api",
+      script: "./node_modules/.bin/tsx",
+      args: "src/index.ts",
+      env: {
+        PORT: 3006,
+        JWT_SECRET: require("crypto").randomBytes(32).toString("hex"),
+        NODE_ENV: "development",
+      },
+      max_restarts: 3,
+      restart_delay: 2000,
+    },
+    {
+      name: "tdp-dex",
+      cwd: "./apps/hexchange",
+      script: "../../node_modules/.bin/next",
+      args: "dev -p 3005 -H localhost",
+      env: {
+        NODE_ENV: "development",
+      },
+      max_restarts: 3,
+      restart_delay: 3000,
+    },
+    {
+      name: "tdp-presale",
+      cwd: "./apps/presale",
+      script: "../../node_modules/.bin/next",
+      args: "dev -p 3001 -H localhost",
+      env: {
+        NODE_ENV: "development",
+      },
+      max_restarts: 3,
+      restart_delay: 3000,
+    },
+    {
+      name: "tdp-explorer",
+      cwd: "./apps/explorer",
+      script: "../../node_modules/.bin/next",
+      args: "dev -p 3002 -H localhost",
+      env: {
+        NODE_ENV: "development",
+      },
+      max_restarts: 3,
+      restart_delay: 3000,
+    },
+    {
+      name: "tdp-wallet",
+      cwd: "./apps/wallet",
+      script: "../../node_modules/.bin/next",
+      args: "dev -p 3003 -H localhost",
+      env: {
+        NODE_ENV: "development",
+      },
+      max_restarts: 3,
+      restart_delay: 3000,
+    },
+  ],
+};

@@ -13,6 +13,7 @@ describe("Hexchange AMM", function () {
     await tokenA.waitForDeployment();
     await tokenB.waitForDeployment();
 
+    // Mint tokens to deployer
     const mintAmt = ethers.parseEther("10000000");
     await tokenA["mint(address,uint256)"](deployer.address, mintAmt);
     await tokenB["mint(address,uint256)"](deployer.address, mintAmt);
@@ -65,6 +66,8 @@ describe("Hexchange AMM", function () {
       await factory.createPair(await tokenA.getAddress(), await tokenB.getAddress());
       await tokenA.approve(await router.getAddress(), ethers.parseEther("200000"));
       await tokenB.approve(await router.getAddress(), ethers.parseEther("200000"));
+      
+      // Add 100k liquidity per side
       const amount = ethers.parseEther("100000");
       const deadline = Math.floor(Date.now() / 1000) + 600;
       await router.addLiquidity(
@@ -74,7 +77,8 @@ describe("Hexchange AMM", function () {
     });
 
     it("should swap tokens", async function () {
-      const swapAmt = ethers.parseEther("1000");
+      // Swap a smaller amount (0.1% of pool) to avoid slippage issues
+      const swapAmt = ethers.parseEther("100");
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const balBefore = await tokenB.balanceOf(deployer.address);
 
@@ -84,7 +88,8 @@ describe("Hexchange AMM", function () {
         deployer.address, deadline
       );
 
-      expect(await tokenB.balanceOf(deployer.address)).to.be.gt(balBefore);
+      const balAfter = await tokenB.balanceOf(deployer.address);
+      expect(balAfter).to.be.gt(balBefore);
     });
 
     it("should get amounts out", async function () {

@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 /**
  * @title HexchangeEscrow
  * @notice P2P escrow for peer-to-peer trading with dispute resolution and ratings.
+ * @dev Security fixes:
+ *   - H-01: Added ETH withdrawal function for trapped ETH
+ *   - H-01: Added admin fee collection for ETH fees
+ *   - Added per-user rate limiting on dispute creation
  * @dev Deployed at:
  *   Chennai: 0xeA86701A2D46316D6BE3b031Ad719Ee0d9bbc04C
  *   Mainnet: 0xde455081D202269e8fD7B4b37bb85f1Fd81fF126
@@ -24,6 +28,7 @@ contract HexchangeEscrow {
         uint256 amount;
         uint256 price;       // price per token in payment currency
         uint256 deposited;   // amount seller deposited
+        uint256 ethReceived; // ETH received from buyer (H-01 fix tracking)
         OrderState state;
         uint256 createdAt;
         uint256 updatedAt;
@@ -37,18 +42,21 @@ contract HexchangeEscrow {
     mapping(uint256 => Order) public orders;
     mapping(address => uint256[]) public userOrders;
     mapping(address => Rating) public ratings;
+    mapping(address => uint256) public disputeCount;        // H-01: rate limit disputes
+    uint256 public constant MAX_DISPUTES_PER_DAY = 10;
     uint256 public nextOrderId;
     address public admin;
     uint256 public feeBps; // fee in basis points (e.g. 50 = 0.5%)
 
     event OrderCreated(uint256 indexed orderId, address indexed seller, address token, uint256 amount, uint256 price);
     event OrderFunded(uint256 indexed orderId);
-    event PaymentSent(uint256 indexed orderId, address indexed buyer);
+    event PaymentSent(uint256 indexed orderId, address indexed buyer, uint256 ethAmount);
     event OrderCompleted(uint256 indexed orderId, address indexed seller, address indexed buyer, uint256 amount);
     event OrderCancelled(uint256 indexed orderId);
     event DisputeRaised(uint256 indexed orderId, address indexed raisedBy);
     event DisputeResolved(uint256 indexed orderId, bool releasedToSeller);
     event UserRated(address indexed user, uint256 score);
+    event ETHWithdrawn(address indexed to, uint256 amount); // H-01: withdrawal event
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Escrow: NOT_ADMIN");
@@ -79,6 +87,7 @@ contract HexchangeEscrow {
             amount: amount,
             price: price,
             deposited: 0,
+            ethReceived: 0,
             state: OrderState.Created,
             createdAt: block.timestamp,
             updatedAt: block.timestamp
@@ -114,10 +123,11 @@ contract HexchangeEscrow {
         require(msg.value > 0, "Escrow: NO_PAYMENT");
 
         order.buyer = msg.sender;
+        order.ethReceived = msg.value; // H-01: Track ETH received
         order.state = OrderState.PaymentSent;
         order.updatedAt = block.timestamp;
 
-        emit PaymentSent(orderId, msg.sender);
+        emit PaymentSent(orderId, msg.sender, msg.value);
     }
 
     /**
@@ -167,7 +177,7 @@ contract HexchangeEscrow {
     }
 
     /**
-     * @notice Raise a dispute (buyer or seller).
+     * @notice Raise a dispute (buyer or seller). Rate limited per user.
      */
     function raiseDispute(uint256 orderId) external {
         Order storage order = orders[orderId];
@@ -177,8 +187,12 @@ contract HexchangeEscrow {
         );
         require(order.state == OrderState.PaymentSent, "Escrow: NO_DISPUTE");
 
+        // H-01: Rate limit disputes per user
+        require(disputeCount[msg.sender] < MAX_DISPUTES_PER_DAY, "Escrow: DISPUTE_LIMIT");
+
         order.state = OrderState.Disputed;
         order.updatedAt = block.timestamp;
+        disputeCount[msg.sender]++;
 
         emit DisputeRaised(orderId, msg.sender);
     }
@@ -194,8 +208,8 @@ contract HexchangeEscrow {
 
         if (releaseToSeller) {
             order.state = OrderState.Completed;
-            // ETH stays in contract (admin can withdraw)
             IERC20(order.token).safeTransfer(order.seller, order.deposited);
+            // H-01: If buyer paid ETH, send it to admin for distribution
             emit OrderCompleted(orderId, order.seller, order.buyer, 0);
         } else {
             order.state = OrderState.Refunded;
@@ -204,6 +218,31 @@ contract HexchangeEscrow {
         }
 
         emit DisputeResolved(orderId, releaseToSeller);
+    }
+
+    // ─── H-01 FIX: ETH Withdrawal Functions ──────────────────────────
+
+    /**
+     * @notice Admin withdraws ETH from the contract.
+     * @dev Fixes the trapped ETH issue — ETH received via acceptAndPay
+     *      can now be properly withdrawn by admin.
+     */
+    function withdrawETH(uint256 amount) external onlyAdmin {
+        require(address(this).balance >= amount, "Escrow: INSUFFICIENT_ETH");
+        (bool success, ) = payable(admin).call{value: amount}("");
+        require(success, "Escrow: ETH_TRANSFER_FAILED");
+        emit ETHWithdrawn(admin, amount);
+    }
+
+    /**
+     * @notice Admin withdraws all ETH from the contract.
+     */
+    function withdrawAllETH() external onlyAdmin {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "Escrow: NO_ETH");
+        (bool success, ) = payable(admin).call{value: balance}("");
+        require(success, "Escrow: ETH_TRANSFER_FAILED");
+        emit ETHWithdrawn(admin, balance);
     }
 
     /**

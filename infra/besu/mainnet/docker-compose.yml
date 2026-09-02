@@ -30,7 +30,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --rpc-ws-enabled
@@ -64,7 +64,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*
@@ -92,7 +92,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*
@@ -120,7 +120,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*
@@ -148,7 +148,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*
@@ -176,7 +176,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*
@@ -204,7 +204,7 @@ services:
       --node-private-key-file=/keys/key
       --rpc-http-enabled
       --rpc-http-api=ETH,NET,WEB3,QBFT
-      --rpc-http-cors-origins=*
+      --rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com,https://www.YOUR_DOMAIN.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005
       --rpc-http-host=0.0.0.0
       --rpc-http-port=8545
       --host-allowlist=*

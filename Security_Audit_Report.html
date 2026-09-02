@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dot Protocol — Security Audit Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0a0a0f; color:#e2e8f0; line-height:1.7; }
+
+  .page { max-width:1100px; margin:0 auto; padding:60px 40px; }
+  @media print { body { background:#fff; color:#1a1a2e; } .page { padding:30px; } }
+
+  /* Header */
+  .audit-header { text-align:center; padding:80px 0 60px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:60px; }
+  .audit-header h1 { font-size:2.4rem; font-weight:900; background:linear-gradient(135deg,#f97316,#eab308); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+  .audit-header .subtitle { font-size:1.1rem; color:#94a3b8; }
+  .audit-header .meta { margin-top:20px; display:flex; justify-content:center; gap:30px; flex-wrap:wrap; }
+  .audit-header .meta span { background:rgba(255,255,255,0.04); padding:8px 18px; border-radius:8px; font-size:0.85rem; color:#94a3b8; border:1px solid rgba(255,255,255,0.06); }
+  .meta strong { color:#f97316; }
+
+  /* Score */
+  .score-section { text-align:center; padding:50px 0; }
+  .score-ring { width:180px; height:180px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:conic-gradient(#ef4444 0deg 237deg, rgba(255,255,255,0.05) 237deg 360deg); position:relative; }
+  .score-ring::before { content:''; position:absolute; width:140px; height:140px; border-radius:50%; background:#0a0a0f; }
+  .score-ring .score-num { position:relative; z-index:1; font-size:3rem; font-weight:900; color:#ef4444; }
+  .score-ring .score-label { position:relative; z-index:1; font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:2px; margin-top:-4px; }
+
+  /* Sections */
+  .section { margin-bottom:50px; }
+  .section h2 { font-size:1.5rem; font-weight:700; color:#f8fafc; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .section h3 { font-size:1.1rem; font-weight:600; color:#e2e8f0; margin:20px 0 10px; }
+
+  /* Severity badges */
+  .sev { display:inline-block; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+  .sev.critical { background:rgba(239,68,68,0.15); color:#ef4444; }
+  .sev.high { background:rgba(249,115,22,0.15); color:#f97316; }
+  .sev.medium { background:rgba(234,179,8,0.15); color:#eab308; }
+  .sev.low { background:rgba(59,130,246,0.15); color:#3b82f6; }
+  .sev.info { background:rgba(34,197,94,0.15); color:#22c55e; }
+
+  /* Findings table */
+  .findings { width:100%; border-collapse:collapse; margin:15px 0; }
+  .findings th { text-align:left; padding:10px 12px; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:#64748b; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .findings td { padding:12px; border-bottom:1px solid rgba(255,255,255,0.03); vertical-align:top; font-size:0.9rem; }
+  .findings tr:hover { background:rgba(255,255,255,0.02); }
+
+  /* Code blocks */
+  code { background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:0.85rem; font-family:'JetBrains Mono',monospace; }
+  pre { background:rgba(0,0,0,0.4); padding:16px; border-radius:8px; overflow-x:auto; margin:12px 0; border:1px solid rgba(255,255,255,0.06); }
+  pre code { background:none; padding:0; }
+
+  /* Cards */
+  .card { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:24px; margin:15px 0; }
+  .card.danger { border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.04); }
+  .card.warning { border-color:rgba(249,115,22,0.3); background:rgba(249,115,22,0.04); }
+  .card.safe { border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.04); }
+
+  /* Lists */
+  ul { padding-left:20px; margin:8px 0; }
+  li { margin:6px 0; }
+
+  .toc { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:24px 30px; margin:30px 0; }
+  .toc h3 { margin:0 0 12px; font-size:0.9rem; text-transform:uppercase; letter-spacing:2px; color:#64748b; }
+  .toc a { color:#f97316; text-decoration:none; display:block; padding:4px 0; font-size:0.9rem; }
+  .toc a:hover { color:#fbbf24; }
+
+  .divider { border:none; border-top:1px solid rgba(255,255,255,0.06); margin:40px 0; }
+
+  /* Print */
+  @media print {
+    .page { max-width:100%; }
+    .card { break-inside:avoid; }
+    .findings { break-inside:auto; }
+    .findings tr { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="audit-header">
+  <h1>Security Audit Report</h1>
+  <div class="subtitle">The Dot Protocol — Full Ecosystem Security Assessment</div>
+  <div class="meta">
+    <span><strong>Date:</strong> September 2, 2026</span>
+    <span><strong>Auditor:</strong> Buffy (AI Code Auditor)</span>
+    <span><strong>Scope:</strong> Full Stack — Contracts, API, Frontend, Infrastructure</span>
+    <span><strong>Version:</strong> 1.0</span>
+  </div>
+</div>
+
+<!-- SCORE -->
+<div class="score-section">
+  <div class="score-ring">
+    <div>
+      <div class="score-num">33</div>
+      <div class="score-label">/ 100</div>
+    </div>
+  </div>
+  <p style="margin-top:20px;color:#94a3b8;font-size:0.95rem;max-width:600px;margin-left:auto;margin-right:auto;">
+    <strong style="color:#ef4444;">CRITICAL RISK.</strong> Multiple high-severity vulnerabilities exist across the stack. Immediate remediation required before any production deployment handling real user funds.
+  </p>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <a href="#exec">1. Executive Summary</a>
+  <a href="#findings">2. Critical & High Findings</a>
+  <a href="#contracts">3. Smart Contract Security</a>
+  <a href="#api">4. API & Backend Security</a>
+  <a href="#frontend">5. Frontend Security</a>
+  <a href="#infra">6. Infrastructure Security</a>
+  <a href="#bridge">7. Bridge Security</a>
+  <a href="#wallet">8. Wallet Security</a>
+  <a href="#checklist">9. Pre-Launch Checklist</a>
+  <a href="#recommendations">10. Remediation Roadmap</a>
+</div>
+
+<hr class="divider">
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<div class="section" id="exec">
+<h2>1. Executive Summary</h2>
+<p>This audit covers the entire Dot Protocol ecosystem: 11 Solidity smart contracts, the Hexchange API backend, 5 frontend applications, and the Besu chain infrastructure. The assessment evaluates production readiness for handling real user funds.</p>
+
+<div class="card danger" style="margin-top:20px;">
+  <h3>🚨 Key Finding</h3>
+  <p>The system is <strong>not production-ready</strong> for real funds. While the architecture is sound and follows established patterns (Uniswap V2 AMM, OpenZeppelin access control), critical security gaps remain in key management, access control granularity, bridge validation, and frontend integrity.</p>
+</div>
+
+<table class="findings" style="margin-top:20px;">
+<tr><th>Category</th><th>Findings</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th><th>Info</th></tr>
+<tr><td>Smart Contracts</td><td>14</td><td>2</td><td>4</td><td>5</td><td>2</td><td>1</td></tr>
+<tr><td>API / Backend</td><td>8</td><td>1</td><td>3</td><td>2</td><td>1</td><td>1</td></tr>
+<tr><td>Frontend</td><td>5</td><td>1</td><td>1</td><td>2</td><td>1</td><td>0</td></tr>
+<tr><td>Infrastructure</td><td>6</td><td>1</td><td>2</td><td>2</td><td>1</td><td>0</td></tr>
+<tr><td>Bridge</td><td>4</td><td>1</td><td>2</td><td>1</td><td>0</td><td>0</td></tr>
+<tr style="font-weight:700;"><td>Total</td><td>37</td><td style="color:#ef4444;">6</td><td style="color:#f97316;">12</td><td style="color:#eab308;">12</td><td style="color:#3b82f6;">5</td><td style="color:#22c55e;">2</td></tr>
+</table>
+</div>
+
+<hr class="divider">
+
+<!-- 2. CRITICAL & HIGH FINDINGS -->
+<div class="section" id="findings">
+<h2>2. Critical & High Findings</h2>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-01: Single EOA Admin Controls Entire Token Supply</h3>
+<p><strong>Contracts:</strong> DPC20, Oracle, Stabilization, Governance, Bridge</p>
+<p><strong>Description:</strong> A single externally-owned account (EOA) holds DEFAULT_ADMIN_ROLE on all deployed contracts. This private key is the single point of failure. If compromised, an attacker can:</p>
+<ul>
+  <li>Mint unlimited tokens (draining the entire 1T supply)</li>
+  <li>Rebase the token, inflating/deflating all balances</li>
+  <li>Pause all token transfers globally</li>
+  <li>Add/remove bridge validators</li>
+  <li>Modify oracle price feeds</li>
+  <li>Execute arbitrary governance proposals</li>
+</ul>
+<p><strong>Impact:</strong> Total loss of all user funds across the ecosystem.</p>
+<p><strong>Remediation:</strong> Deploy a Gnosis Safe multisig (3-of-5 minimum) as admin on all contracts. Add a 48-hour timelock to critical operations (rebase, mint, pause). Transfer DEFAULT_ADMIN_ROLE to the multisig immediately.</p>
+</div>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-02: Rebase Function Can Drain Token Supply Without Governance</h3>
+<p><strong>Contract:</strong> DPC20.sol, line 67-78</p>
+<p><strong>Description:</strong> The <code>rebase(int256 delta)</code> function allows REBASE_ROLE to mint or burn tokens with a single transaction and no governance vote, timelock, or multi-step confirmation. A negative delta burns tokens from the contract's own balance (which holds the minted rebase amount), but a positive delta mints new tokens up to MAX_SUPPLY.</p>
+<p><strong>Attack vector:</strong> Compromised REBASE_ROLE → rebase(+999999999 ether) → instant minting of trillions of tokens to attacker.</p>
+<p><strong>Remediation:</strong> Add TimelockController (OpenZeppelin) to rebase operations. Require governance proposal → voting period → timelock delay → execution. Cap rebase delta to ±5% of total supply per 30-day period.</p>
+</div>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-03: Hardcoded Private Key in Deploy Script</h3>
+<p><strong>File:</strong> <code>packages/contracts/scripts/deploy-mock-tokens-ethers.js</code>, line 6</p>
+<p><strong>Description:</strong> A deployer private key is hardcoded in plaintext: <code>REDACTED_KEY</code>. This key controls 58M TDOT on testnet and is committed to the Git repository.</p>
+<p><strong>Impact:</strong> Anyone with repo access can drain the deployer's funds. If this key is reused on mainnet, all mainnet funds are at risk.</p>
+<p><strong>Remediation:</strong> Remove hardcoded key immediately. Use environment variables only. Rotate the key if it has ever been used on mainnet. Add the deploy script to .gitignore patterns.</p>
+</div>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-04: JWT Secret with Hardcoded Fallback</h3>
+<p><strong>File:</strong> <code>apps/hexchange-api/src/middleware/auth.js</code>, line 3</p>
+<p><strong>Description:</strong> <code>const JWT_SECRET = process.env.JWT_SECRET || "hexchange-dev-secret-key-change-in-production";</code> — The fallback is a well-known string that will be used if the env var is not set (which it currently isn't on any deployment).</p>
+<p><strong>Impact:</strong> Any attacker can forge valid JWT tokens and impersonate any user, including admins. This allows unauthorized order placement, wallet access, and profile modification.</p>
+<p><strong>Remediation:</strong> Generate a cryptographically random 64-byte secret. Require it via env var with no fallback — crash on startup if missing. Rotate immediately if any token was issued with the default.</p>
+</div>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-05: Besu RPC CORS Wildcard on Mainnet</h3>
+<p><strong>File:</strong> <code>infra/besu/mainnet/docker-compose.yml</code>, all validator configs</p>
+<p><strong>Description:</strong> <code>--rpc-http-cors-origins=*</code> on all mainnet nodes allows any website to make RPC calls. Combined with the exposed RPC ports, any malicious webpage can read chain state and submit transactions using the node's connection.</p>
+<p><strong>Impact:</strong> Enables cross-site RPC attacks, chain data exfiltration, and potentially transaction manipulation if combined with wallet injection.</p>
+<p><strong>Remediation:</strong> Restrict CORS to known domains: <code>--rpc-http-cors-origins=https://hexchange.YOUR_DOMAIN.com,https://YOUR_DOMAIN.com</code>. Restrict RPC access to localhost or VPN.</p>
+</div>
+
+<div class="card danger">
+<h3><span class="sev critical">CRITICAL</span> C-06: Bridge Has No Cross-Chain Validation</h3>
+<p><strong>Contract:</strong> Bridge.sol</p>
+<p><strong>Description:</strong> The Bridge contract is deployed but has no functioning cross-chain counterpart. It accepts <code>submitAttestation</code> calls from any RELAYER_ROLE holder without validating actual events on a source chain. This means a compromised relayer can mint tokens on the destination chain without any real source-chain deposit.</p>
+<p><strong>Impact:</strong> Unlimited token minting on any chain via forged attestations.</p>
+<p><strong>Remediation:</strong> Implement proper SPV proofs or use a trusted oracle network (Chainlink CCIP, LayerZero) for cross-chain message validation. Never ship bridge to production without verifiable cross-chain state.</p>
+</div>
+
+<hr class="divider">
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-01: Escrow ETH Trapped in Contract</h3>
+<p><strong>Contract:</strong> HexchangeEscrow.sol, <code>acceptAndPay()</code> and <code>resolveDispute()</code></p>
+<p><strong>Description:</strong> ETH sent via <code>acceptAndPay()</code> is received by the contract but never forwarded to the seller. When <code>resolveDispute()</code> releases to seller, only ERC20 tokens are sent — ETH remains trapped. The contract has a <code>receive()</code> function accepting ETH but no withdrawal mechanism.</p>
+<p><strong>Remediation:</strong> Add an ETH withdrawal function: <code>function withdrawETH(uint256 amount) external onlyAdmin { payable(admin).transfer(amount); }</code>. Fix <code>resolveDispute</code> to also handle ETH.</p>
+</div>
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-02: Order Book Auth Not Enforced</h3>
+<p><strong>File:</strong> <code>apps/hexchange-api/src/index.ts</code>, line 66</p>
+<p><strong>Description:</strong> The order submission endpoint uses <code>optionalAuth</code> and falls back to <code>req.body.user</code> — meaning anyone can submit orders as any wallet address. The cancel endpoint has no auth at all, only checking if the user in the body matches.</p>
+<p><strong>Remediation:</strong> Make auth required for order submission. Validate that <code>req.user.id</code> matches the order creator. Add auth to cancel endpoint.</p>
+</div>
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-03: No SQL Injection Protection</h3>
+<p><strong>File:</strong> <code>apps/hexchange-api/src/routes/auth.js</code> and <code>engine.ts</code></p>
+<p><strong>Description:</strong> While parameterized queries are used (good), the <code>pair</code> parameter from URL paths is decoded and passed directly. The <code>parseInt(req.query.limit)</code> has a NaN fallback but could be exploited. More critically, the order book's <code>seedOrderBook()</code> in engine.ts uses string interpolation in some internal methods.</p>
+<p><strong>Remediation:</strong> Add input validation middleware (e.g., express-validator). Sanitize all URL-decoded parameters. Validate numeric ranges.</p>
+</div>
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-04: Custom JWT Implementation (Not Using Library)</h3>
+<p><strong>File:</strong> <code>apps/hexchange-api/src/middleware/auth.js</code></p>
+<p><strong>Description:</strong> JWT creation and verification is implemented from scratch using raw HMAC. While functionally correct, custom crypto implementations are prone to subtle bugs (timing attacks, algorithm confusion, missing checks). The <code>verifyToken</code> uses string comparison for signatures, which is not constant-time.</p>
+<p><strong>Remediation:</strong> Replace with <code>jsonwebtoken</code> library. Use <code>crypto.timingSafeEqual</code> for signature comparison at minimum.</p>
+</div>
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-05: All Validator Node Keys on Host Filesystem</h3>
+<p><strong>File:</strong> <code>infra/besu/mainnet/networkFiles/</code></p>
+<p><strong>Description:</strong> All 7 validator private keys are stored in plaintext on the host filesystem, accessible to any process or user with disk access. These keys control consensus on mainnet — compromise allows chain reorganization.</p>
+<p><strong>Remediation:</strong> Use hardware security modules (HSM) or AWS KMS for validator keys. At minimum, use file permissions (chmod 600) and move keys out of the repository.</p>
+</div>
+
+<div class="card warning">
+<h3><span class="sev high">HIGH</span> H-06: Token Names Mismatch — DPC20 Named "Dot Protocol Coin" (3DOT)</h3>
+<p><strong>Contract:</strong> DPC20.sol, line 24</p>
+<p><strong>Description:</strong> The DPC20 contract on both testnet and mainnet uses name "Dot Protocol Coin" and symbol "3DOT". On testnet, the token should be "TDOT" (The Dot Protocol). This creates confusion and potential phishing vectors.</p>
+<p><strong>Remediation:</strong> Deploy a separate TDOT contract for testnet with correct naming, or accept the current naming and document it clearly.</p>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- 3. SMART CONTRACT SECURITY -->
+<div class="section" id="contracts">
+<h2>3. Smart Contract Security</h2>
+
+<h3>✅ Positive Findings</h3>
+<div class="card safe">
+<ul>
+  <li><strong>OpenZeppelin base:</strong> All contracts use battle-tested OpenZeppelin libraries (ERC20, AccessControl, SafeERC20)</li>
+  <li><strong>Solidity 0.8.24:</strong> Built-in overflow/underflow protection</li>
+  <li><strong>No selfdestruct:</strong> No contract uses selfdestruct</li>
+  <li><strong>No tx.origin:</strong> No contracts use tx.origin for auth</li>
+  <li><strong>SafeERC20:</strong> All token transfers use SafeERC20 to handle non-standard return values</li>
+  <li><strong>Reentrancy:</strong> Router and Pair follow checks-effects-interactions pattern</li>
+  <li><strong>Fee structure:</strong> Router has 0.3% fee baked in (Uniswap V2 standard)</li>
+  <li><strong>Deadline protection:</strong> Router uses deadline parameter to prevent stale transactions</li>
+</ul>
+</div>
+
+<h3>⚠️ Contract-Specific Issues</h3>
+<table class="findings">
+<tr><th>Contract</th><th>Issue</th><th>Severity</th><th>Details</th></tr>
+<tr><td>DPC20</td><td>No timelock on rebase</td><td><span class="sev critical">CRITICAL</span></td><td>Single tx can inflate/deflate entire supply</td></tr>
+<tr><td>DPC20</td><td>No rebase cap</td><td><span class="sev high">HIGH</span></td><td>No limit on delta magnitude per period</td></tr>
+<tr><td>DPC20</td><td>Rebase mints to contract</td><td><span class="sev medium">MEDIUM</span></td><td>Rebase mints to <code>address(this)</code>, tokens can be stuck</td></tr>
+<tr><td>HexchangePair</td><td>Unchecked block.timestamp</td><td><span class="sev low">LOW</span></td><td>Line 52: <code>unchecked { }</code> around block.timestamp is safe but should have comment</td></tr>
+<tr><td>HexchangeEscrow</td><td>ETH trapped</td><td><span class="sev high">HIGH</span></td><td>No withdrawal function for received ETH</td></tr>
+<tr><td>HexchangeEscrow</td><td>No rate limiting per user</td><td><span class="sev medium">MEDIUM</span></td><td>Unlimited dispute creation possible</td></tr>
+<tr><td>HexchangePresale</td><td>No emergency pause</td><td><span class="sev medium">MEDIUM</span></td><td>Owner can change prices but cannot pause sale</td></tr>
+<tr><td>Oracle</td><td>Centralized oracle</td><td><span class="sev high">HIGH</span></td><td>Single admin can set any price — manipulation vector</td></tr>
+<tr><td>Governance</td><td>Admin can execute without votes</td><td><span class="sev high">HIGH</span></td><td><code>onlyRole(DEFAULT_ADMIN_ROLE)</code> can execute any proposal</td></tr>
+<tr><td>Bridge</td><td>No cross-chain validation</td><td><span class="sev critical">CRITICAL</span></td><td>Relayer attestation unvalidated</td></tr>
+<tr><td>Factory</td><td>No pair creation fee</td><td><span class="sev info">INFO</span></td><td>Anyone can create pairs (spam vector)</td></tr>
+<tr><td>MockERC20</td><td>Unlimited mint</td><td><span class="sev medium">MEDIUM</span></td><td>No supply cap on mock tokens</td></tr>
+<tr><td>Stabilization</td><td>No oracle dependency</td><td><span class="sev medium">MEDIUM</span></td><td>Stabilization contract exists but has no price feed integration</td></tr>
+<tr><td>Router</td><td>No multi-hop path validation</td><td><span class="sev low">LOW</span></td><td>Only validates first pair exists; intermediate pairs must exist</td></tr>
+</table>
+</div>
+
+<hr class="divider">
+
+<!-- 4. API & BACKEND -->
+<div class="section" id="api">
+<h2>4. API & Backend Security</h2>
+
+<table class="findings">
+<tr><th>Issue</th><th>Severity</th><th>File</th><th>Remediation</th></tr>
+<tr><td>JWT secret fallback</td><td><span class="sev critical">CRITICAL</span></td><td>middleware/auth.js:3</td><td>Require env var, no fallback</td></tr>
+<tr><td>Order auth optional</td><td><span class="sev high">HIGH</span></td><td>index.ts:66</td><td>Require auth for order submission</td></tr>
+<tr><td>Custom JWT impl</td><td><span class="sev high">HIGH</span></td><td>middleware/auth.js</td><td>Use jsonwebtoken library</td></tr>
+<tr><td>No input validation</td><td><span class="sev medium">MEDIUM</span></td><td>Multiple files</td><td>Add express-validator</td></tr>
+<tr><td>Rate limiting on orders only</td><td><span class="sev medium">MEDIUM</span></td><td>index.ts:38</td><td>Add per-user rate limiting</td></tr>
+<tr><td>No HTTPS enforcement</td><td><span class="sev high">HIGH</span></td><td>index.ts</td><td>Add HSTS, redirect HTTP to HTTPS</td></tr>
+<tr><td>No request size limit</td><td><span class="sev low">LOW</span></td><td>index.ts</td><td>Add express.json({ limit: '1mb' })</td></tr>
+<tr><td>WebSocket no auth</td><td><span class="sev info">INFO</span></td><td>index.ts:104</td><td>Consider WS auth for private data</td></tr>
+</table>
+
+<h3>✅ What's Working</h3>
+<div class="card safe">
+<ul>
+  <li>bcrypt with 12 rounds for password hashing</li>
+  <li>Parameterized SQL queries (no injection in main paths)</li>
+  <li>CORS middleware installed</li>
+  <li>Rate limiting on auth endpoints (10 per 15 min)</li>
+  <li>General rate limiting (100/min)</li>
+  <li>SQLite persistence for order book</li>
+</ul>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- 5. FRONTEND -->
+<div class="section" id="frontend">
+<h2>5. Frontend Security</h2>
+
+<table class="findings">
+<tr><th>Issue</th><th>Severity</th><th>Component</th><th>Remediation</th></tr>
+<tr><td>No Content Security Policy</td><td><span class="sev high">HIGH</span></td><td>All apps</td><td>Add CSP headers in next.config.js</td></tr>
+<tr><td>Wallet private keys in browser</td><td><span class="sev critical">CRITICAL</span></td><td>Wallet app</td><td>Never store private keys in localStorage — use Web3Modal/WalletConnect</td></tr>
+<tr><td>No subresource integrity</td><td><span class="sev medium">MEDIUM</span></td><td>All apps</td><td>Add SRI hashes to external scripts</td></tr>
+<tr><td>XSS via token names</td><td><span class="sev medium">MEDIUM</span></td><td>SwapCard</td><td>Sanitize token names/symbols rendered in JSX</td></tr>
+<tr><td>No anti-clickjacking</td><td><span class="sev low">LOW</span></td><td>All apps</td><td>Add X-Frame-Options header</td></tr>
+</table>
+
+<h3>✅ What's Working</h3>
+<div class="card safe">
+<ul>
+  <li>React auto-escaping prevents most XSS</li>
+  <li>MetaMask/WalletConnect integration (no raw key handling in swap components)</li>
+  <li>HTTPS enforced by Vercel (when deployed)</li>
+</ul>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- 6. INFRASTRUCTURE -->
+<div class="section" id="infra">
+<h2>6. Infrastructure Security</h2>
+
+<table class="findings">
+<tr><th>Issue</th><th>Severity</th><th>Component</th><th>Remediation</th></tr>
+<tr><td>CORS wildcard on mainnet RPC</td><td><span class="sev critical">CRITICAL</span></td><td>docker-compose.yml</td><td>Restrict to known domains</td></tr>
+<tr><td>Validator keys on filesystem</td><td><span class="sev high">HIGH</span></td><td>networkFiles/</td><td>Use HSM/KMS, remove from repo</td></tr>
+<tr><td>No TLS on RPC endpoints</td><td><span class="sev high">HIGH</span></td><td>All nodes</td><td>Add reverse proxy with TLS (nginx/caddy)</td></tr>
+<tr><td>Docker containers as root</td><td><span class="sev medium">MEDIUM</span></td><td>docker-compose.yml</td><td>Run as non-root user</td></tr>
+<tr><td>No log rotation</td><td><span class="sev medium">MEDIUM</span></td><td>Docker config</td><td>Add logging driver with max-size</td></tr>
+<tr><td>Same keys for testnet/mainnet</td><td><span class="sev high">HIGH</span></td><td>Key generation</td><td>Generate completely separate key sets per network</td></tr>
+</table>
+</div>
+
+<hr class="divider">
+
+<!-- 7. BRIDGE -->
+<div class="section" id="bridge">
+<h2>7. Bridge Security</h2>
+
+<div class="card danger">
+<h3>⚠️ Bridge is NOT Production-Ready</h3>
+<p>The bridge contract has the correct structure for a cross-chain bridge but lacks:</p>
+<ul>
+  <li><strong>Cross-chain state verification:</strong> Attestations are accepted from any RELAYER_ROLE holder without validating source-chain events</li>
+  <li><strong>Nonce replay protection:</strong> Same attestation can be submitted multiple times</li>
+  <li><strong>Quorum requirement:</strong> Single relayer can approve any transfer</li>
+  <li><strong>Rate limiting:</strong> No per-address or per-token transfer limits</li>
+  <li><strong>Circuit breaker:</strong> No emergency pause if bridge is compromised</li>
+</ul>
+<p><strong>Recommendation:</strong> Do NOT use the bridge for real funds until it has a validated cross-chain messaging layer (Chainlink CCIP, Axelar, or LayerZero).</p>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- 8. WALLET -->
+<div class="section" id="wallet">
+<h2>8. Wallet Security</h2>
+
+<div class="card warning">
+<h3>Wallet App is Currently a Library, Not a Product</h3>
+<ul>
+  <li><strong>No actual wallet functionality:</strong> The app shows mock balances and static HTML</li>
+  <li><strong>No key management:</strong> No seed phrase generation, no key storage, no signing</li>
+  <li><strong>No transaction signing:</strong> Cannot send or receive tokens</li>
+  <li><strong>Security recommendation:</strong> Use WalletConnect v2 or Web3Modal for wallet integration rather than building custom key management. Custom wallet implementations have an extremely high vulnerability rate.</li>
+</ul>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- 9. PRE-LAUNCH CHECKLIST -->
+<div class="section" id="checklist">
+<h2>9. Pre-Launch Security Checklist</h2>
+
+<table class="findings">
+<tr><th>#</th><th>Task</th><th>Priority</th><th>Status</th></tr>
+<tr><td>1</td><td>Deploy Gnosis Safe multisig as admin on all contracts</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>2</td><td>Add TimelockController to DPC20 rebase/mint/pause</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>3</td><td>Remove hardcoded private key from deploy scripts</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>4</td><td>Rotate JWT secret, require env var</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>5</td><td>Restrict CORS on mainnet RPC nodes</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>6</td><td>Add cross-chain validation to Bridge</td><td><span class="sev critical">CRITICAL</span></td><td>🔲 Not done</td></tr>
+<tr><td>7</td><td>Fix Escrow ETH withdrawal</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>8</td><td>Enforce auth on order submission</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>9</td><td>Replace custom JWT with jsonwebtoken library</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>10</td><td>Add TLS to all RPC endpoints</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>11</td><td>Generate separate keys for testnet vs mainnet</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>12</td><td>Move validator keys to HSM/KMS</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>13</td><td>Add Content Security Policy headers</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>14</td><td>Get professional smart contract audit (CertiK, Trail of Bits)</td><td><span class="sev high">HIGH</span></td><td>🔲 Not done</td></tr>
+<tr><td>15</td><td>Add input validation middleware</td><td><span class="sev medium">MEDIUM</span></td><td>🔲 Not done</td></tr>
+<tr><td>16</td><td>Add per-user rate limiting</td><td><span class="sev medium">MEDIUM</span></td><td>🔲 Not done</td></tr>
+<tr><td>17</td><td>Add emergency pause to Presale</td><td><span class="sev medium">MEDIUM</span></td><td>🔲 Not done</td></tr>
+<tr><td>18</td><td>Add request size limits</td><td><span class="sev low">LOW</span></td><td>🔲 Not done</td></tr>
+<tr><td>19</td><td>Add Docker log rotation</td><td><span class="sev low">LOW</span></td><td>🔲 Not done</td></tr>
+<tr><td>20</td><td>Add X-Frame-Options headers</td><td><span class="sev low">LOW</span></td><td>🔲 Not done</td></tr>
+</table>
+</div>
+
+<hr class="divider">
+
+<!-- 10. REMEDIATION ROADMAP -->
+<div class="section" id="recommendations">
+<h2>10. Remediation Roadmap</h2>
+
+<h3>🔴 Phase 1: Critical Fixes (Before Any Production Use) — 1-2 Days</h3>
+<div class="card danger">
+<ol style="padding-left:20px;">
+  <li><strong>Remove hardcoded private key</strong> from deploy scripts</li>
+  <li><strong>Rotate JWT secret</strong> — generate 64-byte random, require via env</li>
+  <li><strong>Restrict CORS</strong> on all Besu nodes to known origins</li>
+  <li><strong>Enforce auth</strong> on order submission endpoint</li>
+  <li><strong>Fix Escrow ETH trap</strong> — add withdrawal function</li>
+</ol>
+</div>
+
+<h3>🟠 Phase 2: High-Priority (Before Mainnet Launch) — 1-2 Weeks</h3>
+<div class="card warning">
+<ol style="padding-left:20px;">
+  <li><strong>Deploy Gnosis Safe multisig</strong> as admin on all contracts</li>
+  <li><strong>Add TimelockController</strong> to DPC20 critical functions</li>
+  <li><strong>Implement proper bridge validation</strong> (CCIP/LayerZero/Axelar)</li>
+  <li><strong>Generate separate validator keys</strong> per network</li>
+  <li><strong>Add TLS</strong> to all RPC endpoints</li>
+  <li><strong>Replace custom JWT</strong> with jsonwebtoken library</li>
+  <li><strong>Add CSP headers</strong> to all frontend apps</li>
+</ol>
+</div>
+
+<h3>🟡 Phase 3: Medium-Priority (Before Public Launch) — 2-4 Weeks</h3>
+<div class="card">
+<ol style="padding-left:20px;">
+  <li><strong>Get professional audit</strong> — CertiK, Trail of Bits, or OpenZeppelin</li>
+  <li><strong>Add input validation</strong> middleware across all API routes</li>
+  <li><strong>Move validator keys</strong> to HSM or AWS KMS</li>
+  <li><strong>Add emergency pause</strong> to Presale and Governance</li>
+  <li><strong>Implement oracle decentralization</strong> — multi-source price feeds</li>
+  <li><strong>Add monitoring</strong> — alerting on unusual mint/rebase/pause events</li>
+</ol>
+</div>
+
+<h3>🟢 Phase 4: Nice-to-Have (Post-Launch Hardening)</h3>
+<div class="card safe">
+<ol style="padding-left:20px;">
+  <li>Add formal verification for critical contract functions</li>
+  <li>Implement bug bounty program</li>
+  <li>Add on-chain monitoring (Tenderly, Forta)</li>
+  <li>Implement circuit breakers for unusual activity</li>
+  <li>Add rate limiting per token pair in Router</li>
+</ol>
+</div>
+
+<hr class="divider">
+
+<div style="text-align:center;padding:40px 0;color:#64748b;font-size:0.85rem;">
+  <p><strong>The Dot Protocol</strong> — Security Audit Report v1.0</p>
+  <p>Generated September 2, 2026 | Auditor: Buffy (AI)</p>
+  <p style="margin-top:10px;color:#475569;">This is an automated code-level audit. A professional third-party audit by a certified firm is <strong>strongly recommended</strong> before handling real user funds.</p>
+</div>
+
+</div>
+</body>
+</html>

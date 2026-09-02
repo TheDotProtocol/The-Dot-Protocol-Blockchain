@@ -4,14 +4,55 @@ import rateLimit from "express-rate-limit";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { orderBook, seedOrderBook } from "./engine";
-import { optionalAuth } from "./middleware/auth";
+import { authMiddleware, optionalAuth } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 
 const app = express();
 const PORT = process.env.PORT || 3006;
 
-app.use(cors());
-app.use(express.json());
+// ─── C-05 FIX: Restrict CORS to known origins ──────────────────────
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+  "http://localhost:3005",
+  "http://localhost:3006",
+  "https://hexchange.YOUR_DOMAIN.com",
+  "https://YOUR_DOMAIN.com",
+  "https://www.YOUR_DOMAIN.com",
+  "https://presale.YOUR_DOMAIN.com",
+  "https://wallet.YOUR_DOMAIN.com",
+  "https://pay.YOUR_DOMAIN.com",
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    // In development, allow all origins
+    if (process.env.NODE_ENV !== "production") {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
+// Limit request body size (1MB max)
+app.use(express.json({ limit: "1mb" }));
 
 // ─── Rate Limiting ─────────────────────────────────────────────
 const generalLimiter = rateLimit({
@@ -32,6 +73,14 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // 10 auth attempts per 15 min
   message: { error: "Too many auth attempts" },
+});
+
+// ─── H-02 FIX: Per-user rate limiting ────────────────────────────
+const userOrderLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20, // 20 orders per user per minute
+  keyGenerator: (req: any) => req.user?.id || req.ip,
+  message: { error: "Per-user order rate limit exceeded" },
 });
 
 app.use("/api/", generalLimiter);
@@ -61,22 +110,32 @@ app.get("/api/trades/:pair", (req, res) => {
   res.json(trades);
 });
 
-// Submit order (auth optional — user derived from token or body)
-app.post("/api/orders", optionalAuth, (req, res) => {
+// ─── H-02 FIX: Submit order requires auth ──────────────────────────
+app.post("/api/orders", authMiddleware, userOrderLimiter, (req, res) => {
   const { pair, side, price, amount } = req.body;
-  const user = req.user?.id || req.body.user;
+  const user = req.user?.id;
 
   if (!user || !pair || !side || !price || !amount) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  const order = orderBook.submitOrder({ user, pair, side, price: parseFloat(price), amount: parseFloat(amount) });
+  // Validate inputs
+  const parsedPrice = parseFloat(price);
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedPrice) || isNaN(parsedAmount) || parsedPrice <= 0 || parsedAmount <= 0) {
+    return res.status(400).json({ error: "Invalid price or amount" });
+  }
+  if (!["buy", "sell"].includes(side)) {
+    return res.status(400).json({ error: "Side must be 'buy' or 'sell'" });
+  }
+
+  const order = orderBook.submitOrder({ user, pair, side, price: parsedPrice, amount: parsedAmount });
   res.json(order);
 });
 
-// Cancel order
-app.delete("/api/orders/:id", (req, res) => {
-  const { user } = req.body || {};
+// ─── H-02 FIX: Cancel order requires auth ──────────────────────────
+app.delete("/api/orders/:id", authMiddleware, (req, res) => {
+  const user = req.user?.id || "";
   const success = orderBook.cancelOrder(req.params.id, user);
   if (success) {
     res.json({ success: true });
@@ -98,7 +157,7 @@ app.get("/api/health", (req, res) => {
 
 // Available pairs
 app.get("/api/pairs", (req, res) => {
-  res.json(["3DOT/USDT", "TDOT/USDT"]);
+  res.json(["3DOT/USDT", "TDOT/USDT", "3DOT/BTC", "3DOT/BNB", "3DOT/USDC", "3DOT/XRP"]);
 });
 
 // ─── HTTP + WebSocket Server ──────────────────────────────────────

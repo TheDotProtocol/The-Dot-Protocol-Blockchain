@@ -132,9 +132,12 @@ contract HexchangeRouter {
         for (uint256 i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
             (address token0,) = _sortTokens(input, output);
+            uint256 amountIn = amounts[i];
             uint256 amountOut = amounts[i + 1];
             (uint256 amount0Out, uint256 amount1Out) = input == token0 ? (uint256(0), amountOut) : (amountOut, uint256(0));
             address to = i < path.length - 2 ? IHexchangeFactory(factory).getPair(output, path[i + 2]) : _to;
+            // Transfer input tokens from msg.sender to the pair before calling swap
+            IERC20(input).safeTransferFrom(msg.sender, IHexchangeFactory(factory).getPair(input, output), amountIn);
             IHexchangePair(IHexchangeFactory(factory).getPair(input, output)).swap(amount0Out, amount1Out, to);
         }
     }

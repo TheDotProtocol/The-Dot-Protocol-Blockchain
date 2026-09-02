@@ -1,0 +1,24 @@
+{
+  "name": "thedotprotocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dot Protocol — blockchain infrastructure, Hexchange DEX, and ecosystem tools",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace=apps/hexchange-api",
+    "build:api": "npm run build --workspace=apps/hexchange-api",
+    "lint": "echo 'Add linter config per workspace'",
+    "typecheck": "tsc --noEmit -p apps/hexchange-api/tsconfig.json"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheDotProtocol/The-Dot-Protocol-Blockchain.git"
+  }
+}

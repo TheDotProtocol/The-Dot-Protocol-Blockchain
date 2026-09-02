@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexchange - Hybrid Crypto Exchange</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e17;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.card{background:#111827;border-radius:16px;border:1px solid #1f2937}
+.btn-primary{background:#f97316;color:#fff;border-radius:12px;padding:12px;font-weight:600;text-align:center;cursor:pointer;border:none;width:100%;transition:background .2s}
+.input{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:12px 16px;color:#fff;outline:none;width:100%;font-size:14px}
+.input:focus{border-color:#f97316}
+.tab-active{background:#f97316!important;color:#fff!important}
+.tab-inactive{color:#9ca3af}
+.page{display:none}.page.active{display:block}
+a{text-decoration:none;color:inherit}
+.green{color:#22c55e}.red{color:#ef4444}
+#chart-container{width:100%;height:350px;border-radius:0 0 16px 16px;overflow:hidden}
+</style>
+</head>
+<body>
+<nav class="border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<a href="#" onclick="showPage('swap')" class="flex items-center gap-2"><span class="text-xl font-bold" style="color:#f97316">Hex</span><span class="text-xl font-semibold">change</span></a>
+<div class="flex gap-1 p-1 rounded-lg" style="background:#1f2937">
+<button onclick="showPage('cex')" id="mode-cex" class="px-4 py-1.5 rounded-md text-xs font-medium tab-inactive">CEX Mode</button>
+<button onclick="showPage('swap')" id="mode-dex" class="px-4 py-1.5 rounded-md text-xs font-medium tab-active">DEX Mode</button>
+</div></div>
+<div class="flex items-center gap-4 text-sm text-gray-400">
+<a href="#" onclick="showPage('trading')" class="hover:text-white">Trade</a>
+<a href="#" onclick="showPage('pool')" class="hover:text-white">Pool</a>
+<a href="#" onclick="showPage('p2p')" class="hover:text-white">P2P</a>
+<a href="#" onclick="showPage('admin')" class="hover:text-white">Admin</a>
+<button onclick="showPage('login')" class="px-4 py-2 rounded-lg text-sm font-medium" style="background:#f97316;color:#fff">Login</button>
+</div></nav>
+
+<!-- DEX SWAP PAGE -->
+<div id="page-swap" class="page active">
+<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="flex flex-col lg:flex-row gap-6 items-start">
+<div class="w-full lg:w-1/3"><div class="card p-6">
+<h2 class="text-lg font-semibold mb-4">Markets</h2>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer"><div><div class="font-medium text-sm">3DOT / USDT</div><div class="text-xs text-gray-500">24h Vol: $1.25M</div></div><div class="text-right"><div class="text-sm font-medium">$1.00</div><div class="text-xs green">+2.4%</div></div></div>
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer"><div><div class="font-medium text-sm">3DOT / BTC</div><div class="text-xs text-gray-500">24h Vol: $890K</div></div><div class="text-right"><div class="text-sm font-medium">0.0000166</div><div class="text-xs green">+1.2%</div></div></div>
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer"><div><div class="font-medium text-sm">3DOT / BNB</div><div class="text-xs text-gray-500">24h Vol: $650K</div></div><div class="text-right"><div class="text-sm font-medium">0.00166</div><div class="text-xs red">-0.8%</div></div></div>
+</div></div></div>
+<div class="w-full lg:w-1/3"><div class="card p-6">
+<div class="flex items-center justify-between mb-4"><h2 class="text-lg font-semibold">Swap</h2><span class="text-gray-400">⚙️</span></div>
+<div style="background:#1f2937;border-radius:12px;padding:16px;margin-bottom:4px">
+<div class="flex items-center justify-between mb-2"><span class="text-sm text-gray-400">You Pay</span><span class="text-sm text-gray-500">Balance: 1,000.00</span></div>
+<div class="flex items-center gap-3"><input type="number" placeholder="0.0" class="input" style="background:transparent;border:none;font-size:24px;font-weight:600"><button class="flex items-center gap-2 px-3 py-2 rounded-lg font-medium" style="background:#374151">🔴 3DOT ▼</button></div></div>
+<div class="flex justify-center -my-3 relative z-10"><button style="background:#374151;padding:8px;border-radius:8px" class="hover:bg-gray-600">⇅</button></div>
+<div style="background:#1f2937;border-radius:12px;padding:16px;margin-top:4px;margin-bottom:16px">
+<div class="flex items-center justify-between mb-2"><span class="text-sm text-gray-400">You Receive</span><span class="text-sm text-gray-500">Balance: 5,000.00</span></div>
+<div class="flex items-center gap-3"><input type="number" placeholder="0.0" class="input" style="background:transparent;border:none;font-size:24px;font-weight:600;color:#d1d5db" readonly><button class="flex items-center gap-2 px-3 py-2 rounded-lg font-medium" style="background:#374151">🟢 USDT ▼</button></div></div>
+<button class="btn-primary text-lg">Enter Amount</button>
+</div></div>
+<div class="w-full lg:w-1/3"><div class="card">
+<div class="p-3 border-b border-gray-800"><h3 class="text-sm font-semibold text-gray-400">Order Book — 3DOT/USDT</h3></div>
+<div class="p-3 space-y-1 text-xs font-mono">
+<div class="flex justify-between text-gray-500"><span>Price</span><span>Amount</span><span>Total</span></div>
+<div class="flex justify-between text-red-400"><span>1.05</span><span>5,000</span><span>$5,250</span></div>
+<div class="flex justify-between text-red-400"><span>1.04</span><span>8,000</span><span>$8,320</span></div>
+<div class="flex justify-between text-red-400"><span>1.03</span><span>10,000</span><span>$10,300</span></div>
+<div class="flex justify-between text-red-400"><span>1.02</span><span>15,000</span><span>$15,300</span></div>
+<div class="flex justify-between text-red-400"><span>1.01</span><span>20,000</span><span>$20,200</span></div>
+<div class="text-center py-2 font-bold text-lg green">$1.00</div>
+<div class="flex justify-between green"><span>0.99</span><span>25,000</span><span>$24,750</span></div>
+<div class="flex justify-between green"><span>0.98</span><span>30,000</span><span>$29,400</span></div>
+<div class="flex justify-between green"><span>0.97</span><span>35,000</span><span>$33,950</span></div>
+<div class="flex justify-between green"><span>0.96</span><span>40,000</span><span>$38,400</span></div>
+<div class="flex justify-between green"><span>0.95</span><span>50,000</span><span>$47,500</span></div>
+</div></div></div>
+</div></div></div>
+
+<!-- CEX TRADING PAGE WITH CHARTS -->
+<div id="page-trading" class="page">
+<div class="max-w-7xl mx-auto px-4 py-4">
+<div class="flex gap-2 overflow-x-auto pb-2 mb-3">
+<button class="flex-shrink-0 px-4 py-3 rounded-xl text-left" style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3)"><div class="text-sm font-medium">3DOT/USDT</div><div class="text-lg font-bold">$1.00</div><div class="text-xs green">+2.4%</div></button>
+<button class="flex-shrink-0 px-4 py-3 rounded-xl text-left" style="background:#111827;border:1px solid transparent"><div class="text-sm font-medium">3DOT/BTC</div><div class="text-lg font-bold">0.0000166</div><div class="text-xs green">+1.2%</div></button>
+<button class="flex-shrink-0 px-4 py-3 rounded-xl text-left" style="background:#111827;border:1px solid transparent"><div class="text-sm font-medium">3DOT/BNB</div><div class="text-lg font-bold">0.00166</div><div class="text-xs red">-0.8%</div></button>
+</div>
+<div class="flex gap-6 text-sm p-3 px-6 rounded-xl mb-3" style="background:#111827">
+<div><span class="text-gray-500">Last: </span><span class="font-bold">$1.00</span></div>
+<div><span class="text-gray-500">24h: </span><span class="green">+2.4%</span></div>
+<div><span class="text-gray-500">High: </span><span>$1.02</span></div>
+<div><span class="text-gray-500">Low: </span><span>$0.98</span></div>
+<div><span class="text-gray-500">Vol: </span><span>$1,250,000</span></div>
+</div>
+<div class="flex flex-col lg:flex-row gap-3">
+<!-- Chart -->
+<div class="w-full lg:w-1/2">
+<div class="card">
+<div class="p-3 border-b border-gray-800 flex items-center justify-between">
+<h3 class="text-sm font-semibold text-gray-400">3DOT/USDT — 1H</h3>
+<div class="flex gap-1"><button class="px-2 py-0.5 rounded text-xs" style="background:rgba(249,115,22,0.2);color:#fb923c">1H</button><button class="px-2 py-0.5 rounded text-xs text-gray-500">4H</button><button class="px-2 py-0.5 rounded text-xs text-gray-500">1D</button></div>
+</div>
+<div id="chart-container"></div>
+</div>
+</div>
+<!-- Order Book -->
+<div class="w-full lg:w-1/4">
+<div class="card">
+<div class="p-3 border-b border-gray-800"><h3 class="text-sm font-semibold text-gray-400">Order Book</h3></div>
+<div class="p-2 space-y-0.5 text-xs font-mono max-h-80 overflow-y-auto">
+<div class="flex justify-between text-gray-500 px-2 py-1"><span>Price</span><span>Amount</span><span>Total</span></div>
+<div class="flex justify-between text-red-400 px-2 py-1"><span>1.05</span><span>5,000</span><span>$5,250</span></div>
+<div class="flex justify-between text-red-400 px-2 py-1"><span>1.04</span><span>8,000</span><span>$8,320</span></div>
+<div class="flex justify-between text-red-400 px-2 py-1"><span>1.03</span><span>12,000</span><span>$12,360</span></div>
+<div class="flex justify-between text-red-400 px-2 py-1"><span>1.02</span><span>25,000</span><span>$25,500</span></div>
+<div class="flex justify-between text-red-400 px-2 py-1"><span>1.01</span><span>50,000</span><span>$50,500</span></div>
+<div class="text-center py-1 font-bold green text-sm">$1.00</div>
+<div class="flex justify-between green px-2 py-1"><span>0.99</span><span>50,000</span><span>$49,500</span></div>
+<div class="flex justify-between green px-2 py-1"><span>0.98</span><span>75,000</span><span>$73,500</span></div>
+<div class="flex justify-between green px-2 py-1"><span>0.97</span><span>100,000</span><span>$97,000</span></div>
+<div class="flex justify-between green px-2 py-1"><span>0.96</span><span>120,000</span><span>$115,200</span></div>
+<div class="flex justify-between green px-2 py-1"><span>0.95</span><span>150,000</span><span>$142,500</span></div>
+</div></div>
+<!-- Depth chart mini -->
+<div class="card mt-3">
+<div class="p-3 border-b border-gray-800"><h3 class="text-sm font-semibold text-gray-400">Market Depth</h3></div>
+<canvas id="depth-canvas" style="width:100%;height:120px"></canvas>
+</div>
+</div>
+<!-- Trade Panel + Recent Trades -->
+<div class="w-full lg:w-1/4 space-y-3">
+<div class="card p-4">
+<div class="flex gap-1 p-1 rounded-lg mb-3" style="background:#111827">
+<button class="flex-1 py-2 rounded-md text-sm font-medium" style="background:#22c55e;color:#fff">Buy</button>
+<button class="flex-1 py-2 rounded-md text-sm font-medium tab-inactive">Sell</button>
+</div>
+<div class="flex gap-2 mb-3 text-xs">
+<button class="px-3 py-1 rounded" style="background:rgba(249,115,22,0.2);color:#fb923c;border:1px solid rgba(249,115,22,0.3)">Limit</button>
+<button class="px-3 py-1 rounded" style="background:#1f2937;color:#9ca3af">Market</button>
+</div>
+<div class="space-y-3">
+<div><label class="block text-xs text-gray-400 mb-1">Price (USDT)</label><input type="number" value="1.00" class="input"></div>
+<div><label class="block text-xs text-gray-400 mb-1">Amount (3DOT)</label><input type="number" placeholder="0.00" class="input"></div>
+<div class="flex gap-2">
+<button class="flex-1 py-1 rounded text-xs" style="background:#1f2937;color:#9ca3af">25%</button>
+<button class="flex-1 py-1 rounded text-xs" style="background:#1f2937;color:#9ca3af">50%</button>
+<button class="flex-1 py-1 rounded text-xs" style="background:#1f2937;color:#9ca3af">75%</button>
+<button class="flex-1 py-1 rounded text-xs" style="background:#1f2937;color:#9ca3af">100%</button>
+</div>
+<button class="w-full py-3 rounded-lg text-sm font-medium" style="background:#22c55e;color:#fff">Buy 3DOT</button>
+</div></div>
+<div class="card">
+<div class="p-3 border-b border-gray-800"><h3 class="text-sm font-semibold text-gray-400">Recent Trades</h3></div>
+<div class="space-y-0.5 p-2 text-xs font-mono">
+<div class="flex justify-between px-2 py-1"><span class="green">1.00</span><span class="text-gray-300">50.00</span><span class="text-gray-500">12:34:56</span></div>
+<div class="flex justify-between px-2 py-1"><span class="red">0.99</span><span class="text-gray-300">25.00</span><span class="text-gray-500">12:34:52</span></div>
+<div class="flex justify-between px-2 py-1"><span class="green">1.00</span><span class="text-gray-300">100.00</span><span class="text-gray-500">12:34:48</span></div>
+<div class="flex justify-between px-2 py-1"><span class="red">0.99</span><span class="text-gray-300">10.00</span><span class="text-gray-500">12:34:41</span></div>
+<div class="flex justify-between px-2 py-1"><span class="green">1.01</span><span class="text-gray-300">75.00</span><span class="text-gray-500">12:34:35</span></div>
+<div class="flex justify-between px-2 py-1"><span class="green">1.00</span><span class="text-gray-300">200.00</span><span class="text-gray-500">12:34:28</span></div>
+<div class="flex justify-between px-2 py-1"><span class="red">0.99</span><span class="text-gray-300">500.00</span><span class="text-gray-500">12:34:20</span></div>
+<div class="flex justify-between px-2 py-1"><span class="green">1.00</span><span class="text-gray-300">1000.00</span><span class="text-gray-500">12:34:12</span></div>
+</div></div>
+</div>
+</div></div></div>
+
+<!-- CEX DASHBOARD -->
+<div id="page-cex" class="page">
+<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="flex items-center justify-between mb-6">
+<div><h1 class="text-2xl font-bold">CEX Dashboard</h1><p class="text-gray-400 text-sm mt-1">Welcome back, <span class="text-white">trader1</span></p></div>
+<div class="flex items-center gap-3"><div class="text-right text-sm"><div class="text-gray-400">Custodial Account</div><div class="green text-xs">● Verified</div></div></div></div>
+<div class="card p-6 mb-6"><div class="text-gray-400 text-sm mb-1">Total Portfolio Value</div><div class="text-3xl font-bold">$75,000.00</div></div>
+<div class="flex gap-1 p-1 rounded-xl mb-6" style="background:#111827">
+<button class="flex-1 px-4 py-2 rounded-lg text-sm font-medium tab-active">Balances</button>
+<button class="flex-1 px-4 py-2 rounded-lg text-sm font-medium tab-inactive">Deposit</button>
+<button class="flex-1 px-4 py-2 rounded-lg text-sm font-medium tab-inactive">Withdraw</button>
+<button class="flex-1 px-4 py-2 rounded-lg text-sm font-medium tab-inactive">Orders</button>
+<button class="flex-1 px-4 py-2 rounded-lg text-sm font-medium tab-inactive">Trades</button>
+</div>
+<div class="card">
+<div class="p-4 border-b border-gray-800"><h3 class="font-semibold">Asset Balances</h3></div>
+<div class="divide-y divide-gray-800">
+<div class="p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" style="background:rgba(249,115,22,0.1);color:#f97316">3DOT</div><div><div class="font-medium">3DOT</div><div class="text-xs text-gray-500">Locked: 5,000.00</div></div></div><div class="text-right"><div class="font-medium">45,000.00</div><div class="text-xs text-gray-500">Available</div></div></div>
+<div class="p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" style="background:rgba(34,197,94,0.1);color:#22c55e">USDT</div><div><div class="font-medium">USDT</div><div class="text-xs text-gray-500">Locked: 2,500.00</div></div></div><div class="text-right"><div class="font-medium">22,500.00</div><div class="text-xs text-gray-500">Available</div></div></div>
+<div class="p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" style="background:rgba(249,115,22,0.1);color:#f97316">BTC</div><div><div class="font-medium">BTC</div><div class="text-xs text-gray-500">Locked: 0.0000</div></div></div><div class="text-right"><div class="font-medium">50.0000</div><div class="text-xs text-gray-500">Available</div></div></div>
+<div class="p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm" style="background:rgba(250,204,21,0.1);color:#facc15">BNB</div><div><div class="font-medium">BNB</div><div class="text-xs text-gray-500">Locked: 0.0000</div></div></div><div class="text-right"><div class="font-medium">100.0000</div><div class="text-xs text-gray-500">Available</div></div></div>
+</div></div></div></div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page">
+<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="flex items-center justify-between mb-6">
+<div><h1 class="text-2xl font-bold">Admin Dashboard</h1><p class="text-gray-400 text-sm">Hexchange Operations Monitor</p></div>
+<div class="flex items-center gap-2 text-sm"><span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span><span class="text-green-400">All Systems Operational</span></div></div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="card p-4"><div class="text-gray-400 text-xs mb-1">Total Users</div><div class="text-2xl font-bold">23</div><div class="text-xs green mt-1">+3 today</div></div>
+<div class="card p-4"><div class="text-gray-400 text-xs mb-1">Open Orders</div><div class="text-2xl font-bold">85</div><div class="text-xs green mt-1">85% filled</div></div>
+<div class="card p-4"><div class="text-gray-400 text-xs mb-1">24h Trades</div><div class="text-2xl font-bold">200</div><div class="text-xs green mt-1">+12%</div></div>
+<div class="card p-4"><div class="text-gray-400 text-xs mb-1">Total TVL</div><div class="text-2xl font-bold">$4.8M</div><div class="text-xs green mt-1">+$125K today</div></div>
+</div>
+<div class="card mb-6">
+<div class="p-4 border-b border-gray-800"><h3 class="font-semibold">Liquidity Pools Overview</h3></div>
+<table class="w-full text-sm">
+<thead class="text-gray-400" style="border-bottom:1px solid #1f2937"><tr><th class="text-left p-3">Pair</th><th class="text-right p-3">TVL</th><th class="text-right p-3">24h Volume</th><th class="text-right p-3">24h Fees</th><th class="text-right p-3">APY</th></tr></thead>
+<tbody class="divide-y divide-gray-800">
+<tr><td class="p-3 font-medium">3DOT/USDT</td><td class="p-3 text-right">$2,000,000</td><td class="p-3 text-right">$1,250,000</td><td class="p-3 text-right green">$3,750</td><td class="p-3 text-right" style="color:#f97316">68.4%</td></tr>
+<tr><td class="p-3 font-medium">3DOT/BTC</td><td class="p-3 text-right">$1,500,000</td><td class="p-3 text-right">$890,000</td><td class="p-3 text-right green">$2,670</td><td class="p-3 text-right" style="color:#f97316">65.2%</td></tr>
+<tr><td class="p-3 font-medium">3DOT/BNB</td><td class="p-3 text-right">$1,200,000</td><td class="p-3 text-right">$650,000</td><td class="p-3 text-right green">$1,950</td><td class="p-3 text-right" style="color:#f97316">59.1%</td></tr>
+<tr><td class="p-3 font-medium">TDOT/USDT</td><td class="p-3 text-right">$100,000</td><td class="p-3 text-right">$45,000</td><td class="p-3 text-right green">$135</td><td class="p-3 text-right" style="color:#f97316">49.3%</td></tr>
+</tbody></table></div>
+<div class="grid grid-cols-2 gap-4">
+<div class="card p-6"><h3 class="font-semibold mb-4">Network Status</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-400"></span><span class="text-sm">Chennai Testnet (1545)</span></div><span class="text-xs text-gray-500">Block #1500+</span></div>
+<div class="flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-400"></span><span class="text-sm">Mainnet (1546)</span></div><span class="text-xs text-gray-500">Block #1200+</span></div>
+<div class="flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-400"></span><span class="text-sm">CEX API (3006)</span></div><span class="text-xs text-gray-500">WebSocket active</span></div>
+<div class="flex items-center justify-between"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-400"></span><span class="text-sm">Hexchange UI (3005)</span></div><span class="text-xs text-gray-500">Next.js 14</span></div>
+</div></div>
+<div class="card p-6"><h3 class="font-semibold mb-4">Deployed Contracts</h3>
+<div class="space-y-2 text-xs font-mono">
+<div class="flex justify-between"><span class="text-gray-400">3DOT Token</span><span>0x84ed...ced56</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Factory</span><span>0x435d...1931</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Router</span><span>0x436A...8667</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Escrow</span><span>0xde45...c81</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Presale</span><span>0xd28f...37a4</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Stabilization</span><span>0x2000...a552</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Governance</span><span>0x002f...Ac81</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Bridge</span><span>0xe908...AE13</span></div>
+</div></div>
+</div></div></div>
+
+<!-- LOGIN -->
+<div id="page-login" class="page">
+<div class="min-h-screen flex items-center justify-center px-4">
+<div class="card p-8 w-full max-w-md">
+<div class="text-center mb-8"><h1 class="text-2xl font-bold"><span style="color:#f97316">Hex</span>change</h1><p class="text-gray-400 mt-2">Sign in to your custodial account</p></div>
+<div class="space-y-4">
+<div><label class="block text-sm text-gray-400 mb-1">Email</label><input type="email" class="input" placeholder="trader1@hexchange.io"></div>
+<div><label class="block text-sm text-gray-400 mb-1">Password</label><input type="password" class="input" placeholder="••••••••"></div>
+<button class="btn-primary py-3 text-lg">Sign In</button></div>
+<div class="mt-4 p-3 rounded-lg text-xs text-gray-500" style="background:#1f2937"><p class="font-medium text-gray-400 mb-1">Demo: trader1@hexchange.io / demo1234</p></div>
+</div></div></div>
+
+<!-- POOL -->
+<div id="page-pool" class="page">
+<div class="max-w-4xl mx-auto px-4 py-8"><h1 class="text-2xl font-bold mb-6">Liquidity Pools</h1>
+<div class="space-y-4">
+<div class="card p-6 flex items-center justify-between"><div class="flex items-center gap-4"><div class="text-2xl">🔴🟢</div><div><div class="font-semibold">3DOT / USDT</div><div class="text-sm text-gray-400">$1.00 • TVL: $2,000,000 • 0.3% fee</div></div></div><button class="px-6 py-2 rounded-lg font-medium text-sm" style="background:#f97316;color:#fff">Add Liquidity</button></div>
+<div class="card p-6 flex items-center justify-between"><div class="flex items-center gap-4"><div class="text-2xl">🔴🟠</div><div><div class="font-semibold">3DOT / BTC</div><div class="text-sm text-gray-400">0.0000166 BTC • TVL: $1,500,000 • 0.3% fee</div></div></div><button class="px-6 py-2 rounded-lg font-medium text-sm" style="background:#f97316;color:#fff">Add Liquidity</button></div>
+<div class="card p-6 flex items-center justify-between"><div class="flex items-center gap-4"><div class="text-2xl">🔴🟡</div><div><div class="font-semibold">3DOT / BNB</div><div class="text-sm text-gray-400">0.00166 BNB • TVL: $1,200,000 • 0.3% fee</div></div></div><button class="px-6 py-2 rounded-lg font-medium text-sm" style="background:#f97316;color:#fff">Add Liquidity</button></div>
+</div></div></div>
+
+<!-- P2P -->
+<div id="page-p2p" class="page">
+<div class="max-w-6xl mx-auto px-4 py-8">
+<div class="flex items-center justify-between mb-6"><h1 class="text-2xl font-bold">P2P Marketplace</h1><button class="px-4 py-2 rounded-lg font-medium text-sm" style="background:#f97316;color:#fff">Create Order</button></div>
+<div class="card overflow-hidden">
+<table class="w-full text-sm"><thead class="text-gray-400" style="border-bottom:1px solid #1f2937"><tr><th class="text-left p-4">Seller</th><th class="text-left p-4">Price</th><th class="text-left p-4">Available</th><th class="text-left p-4">Limits</th><th class="text-right p-4">Action</th></tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #1f2937"><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500 text-xs font-bold">W1</div><div><div class="font-medium">whale1</div><div class="text-xs green">● Verified</div></div></div></td><td class="p-4 font-medium">$1.01</td><td class="p-4">50,000 USDT</td><td class="p-4 text-gray-400">$100 - $50K</td><td class="p-4 text-right"><button class="px-4 py-1.5 rounded-lg text-xs font-medium" style="background:#f97316;color:#fff">Buy</button></td></tr>
+<tr style="border-bottom:1px solid #1f2937"><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs font-bold">T2</div><div><div class="font-medium">trader2</div><div class="text-xs green">● Verified</div></div></div></td><td class="p-4 font-medium">$1.00</td><td class="p-4">25,000 USDT</td><td class="p-4 text-gray-400">$50 - $25K</td><td class="p-4 text-right"><button class="px-4 py-1.5 rounded-lg text-xs font-medium" style="background:#f97316;color:#fff">Buy</button></td></tr>
+<tr><td class="p-4"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 text-xs font-bold">T1</div><div><div class="font-medium">trader1</div><div class="text-xs green">● Verified</div></div></div></td><td class="p-4 font-medium">$0.99</td><td class="p-4">10,000 USDT</td><td class="p-4 text-gray-400">$25 - $10K</td><td class="p-4 text-right"><button class="px-4 py-1.5 rounded-lg text-xs font-medium" style="background:#f97316;color:#fff">Buy</button></td></tr>
+</tbody></table></div></div></div>
+
+<script>
+function showPage(p){document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');document.getElementById('mode-cex').className='px-4 py-1.5 rounded-md text-xs font-medium '+(p==='cex'||p==='trading'||p==='login'||p==='admin'?'tab-active':'tab-inactive');document.getElementById('mode-dex').className='px-4 py-1.5 rounded-md text-xs font-medium '+(p==='swap'||p==='pool'||p==='p2p'?'tab-active':'tab-inactive');if(p==='trading')initChart();if(p==='admin')initDepthChart()}
+
+// Lightweight candlestick chart
+function initChart(){
+const c=document.getElementById('chart-container');
+if(!c||c.dataset.init)return;c.dataset.init='1';
+const chart=LightweightCharts.createChart(c,{width:c.clientWidth,height:350,layout:{background:{type:'solid',color:'#0a0e17'},textColor:'#9ca3af'},grid:{vertLines:{color:'#1f2937'},horzLines:{color:'#1f2937'}},crosshair:{mode:0},rightPriceScale:{borderColor:'#1f2937'},timeScale:{borderColor:'#1f2937',timeVisible:true}});
+const candleSeries=chart.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderUpColor:'#22c55e',borderDownColor:'#ef4444',wickUpColor:'#22c55e',wickDownColor:'#ef4444'});
+const volSeries=chart.addHistogramSeries({priceFormat:{type:'volume'},priceScaleId:'vol'});
+chart.priceScale('vol').applyOptions({scaleMargins:{top:0.8,bottom:0}});
+const data=[];let lastClose=1.0;const now=Math.floor(Date.now()/1000);
+for(let i=80;i>0;i--){const v=0.015;const o=lastClose+(Math.random()-0.5)*v;const cl=o+(Math.random()-0.5)*v;const h=Math.max(o,cl)+Math.random()*v*0.3;const l=Math.min(o,cl)-Math.random()*v*0.3;
+data.push({time:now-i*3600,open:+o.toFixed(4),high:+h.toFixed(4),low:+l.toFixed(4),close:+cl.toFixed(4)});
+volSeries.update({time:now-i*3600,value:Math.random()*300000+50000,color:cl>=o?'rgba(34,197,94,0.3)':'rgba(239,68,68,0.3)'});lastClose=cl}
+candleSeries.setData(data);chart.timeScale().fitContent();
+window.addEventListener('resize',()=>{chart.applyOptions({width:c.clientWidth})})}
+
+// Depth chart canvas
+function initDepthChart(){
+const c=document.getElementById('depth-canvas');if(!c||c.dataset.init)return;c.dataset.init='1';
+const ctx=c.getContext('2d');const dpr=window.devicePixelRatio||1;
+const r=c.getBoundingClientRect();c.width=r.width*dpr;c.height=r.height*dpr;ctx.scale(dpr,dpr);
+const w=r.width,h=r.height;ctx.fillStyle='#0a0e17';ctx.fillRect(0,0,w,h);
+// Bid steps
+const bidLevels=[49500,74250,111000,158000,210000,265000,330000,400000,480000,500000];
+const askLevels=[49500,74250,111000,158000,210000,265000,330000,400000,480000,500000];
+const maxC=500000;
+// Draw bids
+ctx.beginPath();ctx.moveTo(w/2,h-5);
+for(let i=0;i<bidLevels.length;i++){const x=w/2-(i+1)*(w/2/10);const y=h-5-(bidLevels[i]/maxC)*(h-15);ctx.lineTo(x,y)}
+ctx.lineTo(0,h-5);ctx.closePath();ctx.fillStyle='rgba(34,197,94,0.15)';ctx.fill();
+ctx.strokeStyle='#22c55e';ctx.lineWidth=1.5;ctx.beginPath();
+for(let i=0;i<bidLevels.length;i++){const x=w/2-(i+1)*(w/2/10);const y=h-5-(bidLevels[i]/maxC)*(h-15);i===0?ctx.moveTo(w/2,y):ctx.lineTo(x,y)}ctx.stroke();
+// Draw asks
+ctx.beginPath();ctx.moveTo(w/2,h-5);
+for(let i=0;i<askLevels.length;i++){const x=w/2+(i+1)*(w/2/10);const y=h-5-(askLevels[i]/maxC)*(h-15);ctx.lineTo(x,y)}
+ctx.lineTo(w,h-5);ctx.closePath();ctx.fillStyle='rgba(239,68,68,0.15)';ctx.fill();
+ctx.strokeStyle='#ef4444';ctx.lineWidth=1.5;ctx.beginPath();
+for(let i=0;i<askLevels.length;i++){const x=w/2+(i+1)*(w/2/10);const y=h-5-(askLevels[i]/maxC)*(h-15);i===0?ctx.moveTo(w/2,y):ctx.lineTo(x,y)}ctx.stroke();
+// Center line
+ctx.strokeStyle='#f97316';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();ctx.setLineDash([])}
+</script>
+</body></html>

@@ -1,0 +1,68 @@
+{
+  "chennai": {
+    "name": "Dot Protocol Chennai Testnet",
+    "shortName": "chennai",
+    "chainId": 1545,
+    "chainIdHex": "0x609",
+    "networkId": 1545,
+    "currency": {
+      "name": "Test DOT",
+      "symbol": "TDOT",
+      "decimals": 18
+    },
+    "rpc": {
+      "local": "http://127.0.0.1:8545",
+      "aws": "https://rpc-chennai.YOUR_DOMAIN.com"
+    },
+    "explorer": "https://testnet.dotprotocolscan.com",
+    "contracts": {
+      "DPC20": "0x542E95FD423962505EBfb279C1361351507A0185",
+      "Oracle": "0x435d6A390c865De76c80c6262aD2D7a5b5D41931",
+      "Stabilization": "0x436A576D59f7C38BC804ED29251601Eb176f8667",
+      "Governance": "0xde455081D202269e8fD7B4b37bb85f1Fd81fF126",
+      "Bridge": "0xd28f1f5eb7B605670eE295F00Ae512484e7D37a4",
+      "HexchangeFactory": "0xeABAb7FB03f13B51716b8F620Ec9151d4C7Ee3e7",
+      "HexchangeRouter": "0x4C0bb94B0b99cB14eBFbC8fE790533aba3b4373B",
+      "HexchangeEscrow": "0xeA86701A2D46316D6BE3b031Ad719Ee0d9bbc04C",
+      "HexchangePresale": "0x44Ca97cC50ae80Dcc513faDbFfda6e4C637692eA"
+    },
+    "validators": 7,
+    "masterValidators": [1, 2]
+  },
+  "mainnet": {
+    "name": "Dot Protocol Mainnet",
+    "shortName": "dot",
+    "chainId": 1546,
+    "chainIdHex": "0x60A",
+    "networkId": 1546,
+    "currency": {
+      "name": "3DOT",
+      "symbol": "3DOT",
+      "decimals": 18
+    },
+    "rpc": {
+      "local": "http://127.0.0.1:9545",
+      "aws": "https://rpc.YOUR_DOMAIN.com"
+    },
+    "explorer": "https://dotprotocolscan.com",
+    "contracts": {
+      "DPC20": "0x84ed5E46280c6911551925329C3af6c58e4ced56",
+      "Oracle": "0xAE7D6822975e9050bF3AafB823351F95eD518eeb",
+      "Stabilization": "0x2000fd82FEC13e6F7af9B2CA5762374E13bfa552",
+      "Governance": "0x002fB3bAB0544880a8e23122dE6133Ff090eAc81",
+      "Bridge": "0xe90813974118D9A582A011ab8fDFda57acD2AE13",
+      "HexchangeFactory": "0x435d6A390c865De76c80c6262aD2D7a5b5D41931",
+      "HexchangeRouter": "0x436A576D59f7C38BC804ED29251601Eb176f8667",
+      "HexchangeEscrow": "0xde455081D202269e8fD7B4b37bb85f1Fd81fF126",
+      "HexchangePresale": "0xd28f1f5eb7B605670eE295F00Ae512484e7D37a4"
+    },
+    "validators": 7,
+    "masterValidators": [1, 2]
+  },
+  "token": {
+    "standard": "DPC20",
+    "totalSupply": "1000000000000000000000000000000",
+    "totalSupplyFormatted": "1000000000000",
+    "launchPriceUsd": 1
+  }
+}

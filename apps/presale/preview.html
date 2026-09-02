@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3DOT Token Presale — Dot Protocol</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e17;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.card{background:#111827;border-radius:16px;border:1px solid #1f2937}
+.btn-primary{background:#f97316;color:#fff;border-radius:12px;padding:12px 24px;font-weight:600;text-align:center;cursor:pointer;border:none;transition:background .2s}
+.btn-primary:hover{background:#ea580c}
+.input-field{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:12px 16px;color:#fff;outline:none;width:100%;font-size:14px}
+.input-field:focus{border-color:#f97316}
+.glass-card{background:rgba(17,24,39,0.8);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.05);border-radius:20px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.pulse{animation:pulse 2s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(249,115,22,0.3)}50%{box-shadow:0 0 40px rgba(249,115,22,0.6)}}
+.glow{animation:glow 3s infinite}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="border-b border-gray-800 px-6 py-4">
+<div class="max-w-6xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-2xl font-bold" style="color:#f97316">3DOT</span>
+<span class="text-lg font-semibold text-gray-300">Presale</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/15 text-green-400 border border-green-500/30 pulse">● Live Now</span>
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">Whitelist Only</span>
+<button class="btn-primary text-sm py-2 px-4 rounded-lg">Connect Wallet</button>
+</div></div></nav>
+
+<!-- Hero -->
+<section class="max-w-6xl mx-auto px-4 pt-12 pb-8">
+<div class="flex flex-col lg:flex-row gap-12 items-center">
+<div class="w-full lg:w-1/2">
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/15 text-green-400 border border-green-500/30">Live Now</span>
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/30">Private Whitelist</span>
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 text-zinc-400 border border-white/10">DPC20 Standard</span>
+</div>
+<h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
+<span style="color:#f97316">Secure Your DPC20</span><br>
+<span class="text-white">Allocation</span>
+</h1>
+<p class="text-lg text-gray-400 max-w-xl leading-relaxed mb-6">
+Join the private whitelist presale for Dot Protocol's native DPC20 token at
+<span class="text-orange-400 font-semibold">$0.50</span> — launch price <span class="text-green-400 font-semibold">$1.00</span>.
+</p>
+<div class="flex gap-4">
+<button class="btn-primary glow text-lg px-8 py-4 rounded-xl">Buy 3DOT Now</button>
+<button class="px-8 py-4 rounded-xl border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors">Learn More</button>
+</div>
+</div>
+
+<!-- Purchase Card -->
+<div class="w-full lg:w-1/2">
+<div class="glass-card p-8">
+<h2 class="text-2xl font-bold mb-1">Purchase DPC20</h2>
+<p class="text-sm text-zinc-500 mb-6">Whitelist required · MetaMask on Chennai testnet</p>
+
+<!-- Wallet Status -->
+<div class="rounded-xl p-4 mb-6 space-y-2" style="background:rgba(31,41,55,0.5);border:1px solid rgba(255,255,255,0.05)">
+<div class="flex justify-between text-sm">
+<span class="text-zinc-500">Network</span>
+<span class="text-green-400">Chennai Testnet ✓</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-zinc-500">Your TDOT (DPC20)</span>
+<span class="text-orange-400 font-semibold">0.00</span>
+</div>
+</div>
+
+<div class="space-y-4">
+<div>
+<label class="block text-sm text-zinc-500 mb-2">Whitelist Code <span class="text-orange-400">*</span></label>
+<input type="text" placeholder="Enter private whitelist code" class="input-field">
+</div>
+
+<div>
+<label class="block text-sm text-zinc-500 mb-2">Payment Method</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="py-2.5 rounded-lg text-sm font-semibold border" style="background:rgba(249,115,22,0.2);border-color:#f97316;color:#f97316">ETH</button>
+<button class="py-2.5 rounded-lg text-sm font-semibold border" style="background:rgba(31,41,55,0.4);border-color:rgba(255,255,255,0.05);color:#9ca3af">USDT</button>
+<button class="py-2.5 rounded-lg text-sm font-semibold border" style="background:rgba(31,41,55,0.4);border-color:rgba(255,255,255,0.05);color:#9ca3af">BNB</button>
+</div></div>
+
+<div>
+<label class="block text-sm text-zinc-500 mb-2">Amount (USD)</label>
+<input type="number" placeholder="$100 – $50,000" class="input-field" value="1000">
+<p class="text-xs text-zinc-500 mt-2">You receive <span class="text-orange-400 font-semibold">2,000 DPC20</span></p>
+</div>
+
+<button class="w-full py-4 rounded-xl font-semibold text-white text-lg" style="background:#f97316">Confirm Purchase</button>
+
+<div class="text-center text-xs text-zinc-500 bg-gray-800/30 rounded-xl px-4 py-3">
+Min $100 · Max $50,000 · 100% bonus at launch
+</div>
+</div></div>
+</div></div></section>
+
+<!-- Sale Progress -->
+<section class="max-w-6xl mx-auto px-4 py-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Left: Progress -->
+<div class="glass-card p-8">
+<div class="flex items-start justify-between gap-4 mb-6">
+<div>
+<p class="text-sm text-zinc-500 mb-1">Total Raised</p>
+<p class="text-3xl font-bold">$875,000</p>
+</div>
+<div class="text-right">
+<p class="text-sm text-zinc-500 mb-1">Hard Cap</p>
+<p class="text-2xl font-bold" style="color:#f97316">$10,000,000</p>
+</div></div>
+
+<div class="relative h-3 bg-gray-800 rounded-full overflow-hidden mb-2">
+<div class="absolute inset-y-0 left-0 rounded-full" style="width:8.75%;background:linear-gradient(to right,#c2410c,#f97316)"></div>
+<div class="absolute top-0 bottom-0 w-px bg-orange-300/60" style="left:25%"></div>
+</div>
+<div class="flex justify-between text-xs text-zinc-500 mb-8">
+<span>8.75% of hard cap</span>
+<span>Soft cap marker ($2.5M)</span>
+</div>
+
+<div class="grid grid-cols-2 gap-3">
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Token Price</p><p class="text-sm font-semibold">$0.50</p></div>
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Soft Cap</p><p class="text-sm font-semibold">$2.5M</p></div>
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Hard Cap</p><p class="text-sm font-semibold">$10M</p></div>
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Min / Max</p><p class="text-sm font-semibold">$100 – $50K</p></div>
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Payment</p><p class="text-sm font-semibold">ETH · USDT · BNB</p></div>
+<div class="rounded-xl p-3" style="background:rgba(31,41,55,0.4);border:1px solid rgba(255,255,255,0.05)"><p class="text-xs text-zinc-500">Total Supply</p><p class="text-sm font-semibold">1 Trillion</p></div>
+</div></div>
+
+<!-- Right: Stats + Tokenomics -->
+<div class="space-y-6">
+<div class="card p-6">
+<h2 class="text-lg font-semibold mb-4">Sale Stats</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="rounded-lg p-3" style="background:#1f2937"><div class="text-xs text-gray-500">Total Sold</div><div class="text-lg font-semibold mt-1">245,000,000</div><div class="text-xs text-gray-500">3DOT</div></div>
+<div class="rounded-lg p-3" style="background:#1f2937"><div class="text-xs text-gray-500">Total Buyers</div><div class="text-lg font-semibold mt-1">1,247</div><div class="text-xs text-gray-500">participants</div></div>
+<div class="rounded-lg p-3" style="background:#1f2937"><div class="text-xs text-gray-500">Token Price</div><div class="text-lg font-semibold mt-1">$0.01</div><div class="text-xs text-gray-500">at launch</div></div>
+<div class="rounded-lg p-3" style="background:#1f2937"><div class="text-xs text-gray-500">Market Cap</div><div class="text-lg font-semibold mt-1">$10M</div><div class="text-xs text-gray-500">at launch</div></div>
+</div></div>
+
+<div class="card p-6">
+<h2 class="text-lg font-semibold mb-4">Tokenomics</h2>
+<div class="space-y-3">
+<div><div class="flex justify-between text-sm mb-1"><span>Presale</span><span class="text-gray-400">40%</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full" style="width:40%;background:#f97316"></div></div></div>
+<div><div class="flex justify-between text-sm mb-1"><span>Liquidity</span><span class="text-gray-400">25%</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full" style="width:25%;background:#3b82f6"></div></div></div>
+<div><div class="flex justify-between text-sm mb-1"><span>Team & Advisors</span><span class="text-gray-400">15%</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full" style="width:15%;background:#a855f7"></div></div></div>
+<div><div class="flex justify-between text-sm mb-1"><span>Marketing</span><span class="text-gray-400">10%</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full" style="width:10%;background:#22c55e"></div></div></div>
+<div><div class="flex justify-between text-sm mb-1"><span>Ecosystem Fund</span><span class="text-gray-400">10%</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full" style="width:10%;background:#eab308"></div></div></div>
+</div></div>
+
+<div class="card p-6">
+<h2 class="text-lg font-semibold mb-4">Key Info</h2>
+<div class="space-y-2 text-sm">
+<div class="flex justify-between"><span class="text-gray-400">Network</span><span>Dot Protocol Mainnet</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Token Standard</span><span>DPC20 v1</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Total Supply</span><span>1,000,000,000,000</span></div>
+<div class="flex justify-between"><span class="text-gray-400">TGE Unlock</span><span>20%</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Vesting</span><span>6 months linear</span></div>
+<div class="flex justify-between"><span class="text-gray-400">Chain ID</span><span>1546</span></div>
+</div></div>
+</div>
+</div></section>
+
+<!-- Roadmap -->
+<section class="max-w-6xl mx-auto px-4 py-12">
+<h2 class="text-3xl font-bold text-center mb-10">Roadmap</h2>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="card p-5 border-orange-500/30">
+<div class="text-sm font-medium mb-2 text-orange-400">Q1 2025</div>
+<h3 class="font-semibold mb-3">Launch MVP</h3>
+<ul class="space-y-2">
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>Basic hybrid CEX/DEX</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>3DOT Wallet integration</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>Initial liquidity pools</li>
+</ul></div>
+<div class="card p-5">
+<div class="text-sm font-medium mb-2 text-gray-400">Q2 2025</div>
+<h3 class="font-semibold mb-3">Feature Expansion</h3>
+<ul class="space-y-2">
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Advanced order types</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>P2P marketplace</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Mobile app beta</li>
+</ul></div>
+<div class="card p-5">
+<div class="text-sm font-medium mb-2 text-gray-400">Q3 2025</div>
+<h3 class="font-semibold mb-3">Scale & Partnerships</h3>
+<ul class="space-y-2">
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Global partnerships</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Enhanced UI/UX</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Cross-chain bridges</li>
+</ul></div>
+<div class="card p-5">
+<div class="text-sm font-medium mb-2 text-gray-400">Q4 2025</div>
+<h3 class="font-semibold mb-3">Full Rollout</h3>
+<ul class="space-y-2">
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Complete escrow system</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Mobile app launch</li>
+<li class="flex items-start gap-2 text-sm text-gray-400"><span class="mt-1 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></span>Global expansion</li>
+</ul></div>
+</div></section>
+
+<!-- FAQ -->
+<section class="max-w-2xl mx-auto px-4 py-12">
+<h2 class="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+<div class="space-y-3">
+<details class="card overflow-hidden" open>
+<summary class="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-gray-800/30 transition-colors font-medium list-none">
+What is 3DOT?<span class="text-gray-400 text-xl">−</span></summary>
+<div class="px-4 pb-4 text-gray-400 text-sm leading-relaxed">3DOT is the native token of the Dot Protocol ecosystem, powering Hexchange, the 3Dot Wallet, and the entire DeFi ecosystem on our EVM-compatible blockchain.</div></details>
+<details class="card overflow-hidden">
+<summary class="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-gray-800/30 transition-colors font-medium list-none">
+How do I participate in the presale?<span class="text-gray-400 text-xl">+</span></summary>
+<div class="px-4 pb-4 text-gray-400 text-sm leading-relaxed">Connect your wallet (MetaMask or 3Dot Wallet), select your payment method (ETH, USDT, or BNB), enter the amount, and confirm the transaction.</div></details>
+<details class="card overflow-hidden">
+<summary class="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-gray-800/30 transition-colors font-medium list-none">
+When will tokens be distributed?<span class="text-gray-400 text-xl">+</span></summary>
+<div class="px-4 pb-4 text-gray-400 text-sm leading-relaxed">20% of purchased tokens will be available at TGE (Token Generation Event). The remaining 80% will vest linearly over 6 months.</div></details>
+<details class="card overflow-hidden">
+<summary class="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-gray-800/30 transition-colors font-medium list-none">
+What is the minimum purchase?<span class="text-gray-400 text-xl">+</span></summary>
+<div class="px-4 pb-4 text-gray-400 text-sm leading-relaxed">The minimum purchase is $100. The maximum is $50,000 per transaction during the whitelist phase.</div></details>
+<details class="card overflow-hidden">
+<summary class="w-full p-4 flex items-center justify-between text-left cursor-pointer hover:bg-gray-800/30 transition-colors font-medium list-none">
+Which networks are supported?<span class="text-gray-400 text-xl">+</span></summary>
+<div class="px-4 pb-4 text-gray-400 text-sm leading-relaxed">Currently we support purchases on Ethereum mainnet. 3DOT tokens will be distributed on Dot Protocol Mainnet (Chain ID 1546).</div></details>
+</div></section>
+
+<!-- Footer -->
+<footer class="border-t border-gray-800 py-8 mt-12">
+<div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold" style="color:#f97316">3DOT</span>
+<span class="text-gray-400">© 2025 Dot Protocol. All rights reserved.</span>
+</div>
+<div class="flex gap-6 text-sm text-gray-400">
+<a href="#" class="hover:text-white">Twitter</a>
+<a href="#" class="hover:text-white">Discord</a>
+<a href="#" class="hover:text-white">Telegram</a>
+<a href="#" class="hover:text-white">GitHub</a>
+<a href="#" class="hover:text-white">Docs</a>
+</div></div></footer>
+
+</body></html>

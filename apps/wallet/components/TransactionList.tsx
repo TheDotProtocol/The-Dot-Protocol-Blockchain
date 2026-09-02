@@ -1,64 +1,79 @@
-'use client';
+"use client";
 
 const TRANSACTIONS = [
-  { type: 'receive', token: '3DOT', amount: '+1,000,000,000,000', from: '0x84ed...ced56', date: 'Today, 3:45 PM', status: 'confirmed', hash: '0xabc1...def2' },
-  { type: 'send', token: 'USDT', amount: '-5,000', to: '0xf39Fd...2266', date: 'Yesterday', status: 'confirmed', hash: '0x1234...5678' },
-  { type: 'swap', token: '3DOT → ETH', amount: '100,000 → 0.32', date: '2 days ago', status: 'confirmed', hash: '0xdead...beef' },
-  { type: 'receive', token: 'USDC', amount: '+3,000', from: '0x1234...5678', date: '3 days ago', status: 'confirmed', hash: '0xcafe...babe' },
-  { type: 'send', token: '3DOT', amount: '-1,000,000', to: '0xabcd...ef01', date: '5 days ago', status: 'confirmed', hash: '0xface...1234' },
-  { type: 'pay', token: '3DOT', amount: '-24.99', to: 'CryptoShop', date: '1 week ago', status: 'confirmed', hash: '0xbeef...cafe' },
+  { type: "receive", token: "3DOT", amount: "+500.00", from: "0x742d...2bD18", time: "2 min ago", status: "confirmed" },
+  { type: "send", token: "USDT", amount: "-1,200.00", to: "0x1234...5678", time: "1 hour ago", status: "confirmed" },
+  { type: "swap", token: "3DOT → USDC", amount: "+850.00", from: "Hexchange", time: "3 hours ago", status: "confirmed" },
+  { type: "receive", token: "BTC", amount: "+0.012", from: "0x9876...5432", time: "1 day ago", status: "confirmed" },
+  { type: "send", token: "BNB", amount: "-2.5", to: "0xdead...beef", time: "2 days ago", status: "confirmed" },
+  { type: "pay", token: "3DOT", amount: "-50.00", to: "3Dot Pay: Coffee Shop", time: "3 days ago", status: "confirmed" },
+  { type: "receive", token: "XRP", amount: "+1,000", from: "0xaaaa...bbbb", time: "4 days ago", status: "confirmed" },
 ];
 
 export default function TransactionList() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Transaction History</h1>
-
-      {/* Filters */}
-      <div className="flex gap-2 mb-4">
-        {['All', 'Sent', 'Received', 'Swaps', 'Payments'].map((f) => (
-          <button key={f} className="px-4 py-2 rounded-lg text-sm bg-gray-800 text-gray-400 hover:bg-gray-700 transition-colors">
-            {f}
-          </button>
-        ))}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Transaction History</h1>
+          <p className="text-sm text-gray-500 mt-1">All your deposits, withdrawals, and trades</p>
+        </div>
+        <div className="flex gap-2">
+          {["All", "Sent", "Received", "Swaps"].map((filter) => (
+            <button
+              key={filter}
+              className="px-3 py-1.5 rounded-lg text-xs text-gray-400 bg-[#111827] border border-white/5 hover:text-white transition-colors"
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="card overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-800 text-sm text-gray-500">
-              <th className="text-left p-4">Type</th>
-              <th className="text-left p-4">Token</th>
-              <th className="text-left p-4">Amount</th>
-              <th className="text-left p-4">Date</th>
-              <th className="text-left p-4">Status</th>
-              <th className="text-right p-4">Tx Hash</th>
-            </tr>
-          </thead>
-          <tbody>
-            {TRANSACTIONS.map((tx, i) => (
-              <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                <td className="p-4">
-                  <span className={`inline-flex items-center gap-1.5 text-sm ${
-                    tx.type === 'send' || tx.type === 'pay' ? 'text-red-400' : tx.type === 'receive' ? 'text-green-400' : 'text-blue-400'
-                  }`}>
-                    {tx.type === 'send' || tx.type === 'pay' ? '↑' : tx.type === 'receive' ? '↓' : '⇄'}
-                    {tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}
-                  </span>
-                </td>
-                <td className="p-4 text-sm">{tx.token}</td>
-                <td className="p-4 text-sm font-medium">{tx.amount}</td>
-                <td className="p-4 text-sm text-gray-400">{tx.date}</td>
-                <td className="p-4">
-                  <span className="bg-green-500/10 text-green-400 text-xs px-2 py-1 rounded-full">{tx.status}</span>
-                </td>
-                <td className="p-4 text-right">
-                  <span className="text-sm text-gray-400 font-mono cursor-pointer hover:text-orange-400">{tx.hash}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {TRANSACTIONS.map((tx, i) => (
+          <div
+            key={i}
+            className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] last:border-0"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                  tx.type === "receive"
+                    ? "bg-green-500/10"
+                    : tx.type === "send"
+                    ? "bg-red-500/10"
+                    : tx.type === "swap"
+                    ? "bg-blue-500/10"
+                    : "bg-purple-500/10"
+                }`}
+              >
+                {tx.type === "receive" ? "📥" : tx.type === "send" ? "📤" : tx.type === "swap" ? "🔄" : "💳"}
+              </div>
+              <div>
+                <div className="text-sm font-medium capitalize">{tx.type}</div>
+                <div className="text-xs text-gray-500">
+                  {tx.type === "receive" ? `From: ${tx.from}` : tx.type === "send" ? `To: ${tx.to}` : tx.type === "swap" ? tx.token : tx.to}
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div
+                className={`text-sm font-mono font-medium ${
+                  tx.amount.startsWith("+") ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {tx.amount} {tx.token.split(" ")[0]}
+              </div>
+              <div className="text-xs text-gray-600">{tx.time}</div>
+            </div>
+            <div className="w-16 text-right">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                {tx.status}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

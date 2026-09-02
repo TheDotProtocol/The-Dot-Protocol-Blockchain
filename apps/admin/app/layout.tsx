@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "3Dot Wallet — Your Crypto Wallet",
-  description: "Manage your crypto assets with 3Dot Wallet. Send, receive, and pay with crypto.",
+  title: "Admin Dashboard — The Dot Protocol",
+  description: "Monitor contracts, manage users, and oversee the Dot Protocol ecosystem.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

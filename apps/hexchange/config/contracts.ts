@@ -16,6 +16,20 @@ export const HEX_ADDRESSES = {
   },
 } as const;
 
+// Mock tokens deployed on Dot Protocol chains (via deploy-liquidity.js)
+export const MOCK_TOKENS: Record<number, { symbol: string; address: string; decimals: number }[]> = {
+  1545: [
+    { symbol: "USDT", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6 },
+    { symbol: "BTC", address: "0x5dDB6171136b2A922f7fB262baf485a3865B5Ca2", decimals: 8 },
+    { symbol: "BNB", address: "0x0670Dceaf0f6696eB423531fA2a2c4aBc94FBdB3", decimals: 18 },
+  ],
+  1546: [
+    { symbol: "USDT", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6 },
+    { symbol: "BTC", address: "0x5dDB6171136b2A922f7fB262baf485a3865B5Ca2", decimals: 8 },
+    { symbol: "BNB", address: "0x0670Dceaf0f6696eB423531fA2a2c4aBc94FBdB3", decimals: 18 },
+  ],
+};
+
 export const ROUTER_ABI = [
   "function factory() view returns (address)",
   "function addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256) returns (uint256,uint256,uint256)",

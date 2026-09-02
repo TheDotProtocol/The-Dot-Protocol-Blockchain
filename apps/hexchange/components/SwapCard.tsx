@@ -6,8 +6,9 @@ import { HEX_ADDRESSES, ROUTER_ABI, ERC20_ABI } from "@/config/contracts";
 
 const TOKENS = [
   { symbol: "3DOT", name: "3DOT", icon: "🔴", address: "0x84ed5E46280c6911551925329C3af6c58e4ced56", decimals: 18 },
-  { symbol: "USDT", name: "Tether USD", icon: "🟢", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals: 6 },
-  { symbol: "USDC", name: "USD Coin", icon: "🔵", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals: 6 },
+  { symbol: "USDT", name: "Mock USDT", icon: "🟢", address: "0x8896De4418363aD53c003D02d642aFA26Aaf4e84", decimals: 6 },
+  { symbol: "BTC", name: "Mock BTC", icon: "🔵", address: "0x5dDB6171136b2A922f7fB262baf485a3865B5Ca2", decimals: 8 },
+  { symbol: "BNB", name: "Mock BNB", icon: "🟣", address: "0x0670Dceaf0f6696eB423531fA2a2c4aBc94FBdB3", decimals: 18 },
   { symbol: "TDOT", name: "Test DOT", icon: "🟡", address: "0x542E95FD423962505EBfb279C1361351507A0185", decimals: 18 },
 ];
 

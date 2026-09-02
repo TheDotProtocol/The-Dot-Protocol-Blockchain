@@ -5,18 +5,41 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #0a0e17;
+  background: #05080f;
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* ─── Hexchange Card ─────────────────────────────────────── */
 .card {
-  background: #111827;
+  background: #0d1117;
   border-radius: 16px;
-  border: 1px solid rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s;
 }
 
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Nav Links ──────────────────────────────────────────── */
+.nav-link {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
 .btn-primary {
   background: linear-gradient(135deg, #f97316, #ea580c);
   color: #fff;
@@ -47,13 +70,34 @@ body {
   box-shadow: none;
 }
 
-/* Custom scrollbar */
+/* ─── Mode Badge ─────────────────────────────────────────── */
+.mode-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.mode-dex {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.mode-cex {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #374151; }
 
-/* Input number spinner removal */
+/* ─── Input ──────────────────────────────────────────────── */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -61,5 +105,37 @@ input[type=number]::-webkit-outer-spin-button {
 }
 input[type=number] { -moz-appearance: textfield; }
 
-/* Selection */
 ::selection { background: rgba(249, 115, 22, 0.3); }
+
+/* ─── Trade Tabs ─────────────────────────────────────────── */
+.trade-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+}
+
+.trade-tab:hover {
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.trade-tab.active {
+  color: #fff;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+/* ─── Order Book Depth ───────────────────────────────────── */
+.depth-bar-buy {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.15), transparent);
+}
+
+.depth-bar-sell {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), transparent);
+}

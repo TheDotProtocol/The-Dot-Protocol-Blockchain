@@ -1,0 +1,81 @@
+{
+  "name": "dot-protocol-forta-bot",
+  "description": "Monitors Dot Protocol contracts for suspicious activity",
+  "chainIds": [1545, 1546],
+  "alertConfigs": [
+    {
+      "id": "TDOT-LARGE-MINT",
+      "severity": "HIGH",
+      "description": "Alert when minting exceeds 1M TDOT in a single transaction",
+      "contract": "0x542E95FD423962505EBfb279C1361351507A0185",
+      "event": "Minted",
+      "condition": "args.amount > 1000000000000000000000000",
+      "action": "notify"
+    },
+    {
+      "id": "3DOT-LARGE-MINT",
+      "severity": "CRITICAL",
+      "description": "Alert when minting exceeds 1B 3DOT in a single transaction",
+      "contract": "0x84ed5E46280c6911551925329C3af6c58e4ced56",
+      "event": "Minted",
+      "condition": "args.amount > 1000000000000000000000000000",
+      "action": "notify"
+    },
+    {
+      "id": "REBASE-EXECUTED",
+      "severity": "MEDIUM",
+      "description": "Alert on any rebase execution",
+      "contract": "0x542E95FD423962505EBfb279C1361351507A0185",
+      "event": "Rebased",
+      "action": "notify"
+    },
+    {
+      "id": "PAUSE-EXECUTED",
+      "severity": "CRITICAL",
+      "description": "Alert when token is paused",
+      "contract": "0x542E95FD423962505EBfb279C1361351507A0185",
+      "event": "PausedState",
+      "condition": "args.isPaused == true",
+      "action": "notify"
+    },
+    {
+      "id": "ESCALATE-UNPAUSE",
+      "severity": "CRITICAL",
+      "description": "Alert when token is unpaused (potential compromised admin)",
+      "contract": "0x542E95FD423962505EBfb279C1361351507A0185",
+      "event": "PausedState",
+      "condition": "args.isPaused == false",
+      "action": "escalate"
+    },
+    {
+      "id": "BRIDGE-OUTBOUND",
+      "severity": "MEDIUM",
+      "description": "Alert on any cross-chain transfer",
+      "contract": "0xd28f1f5eb7B605670eE295F00Ae512484e7D37a4",
+      "event": "OutboundTransfer",
+      "condition": "args.amount > 1000000000000000000000",
+      "action": "notify"
+    },
+    {
+      "id": "GOVERNANCE-PROPOSAL",
+      "severity": "LOW",
+      "description": "Alert on new governance proposals",
+      "contract": "0xde455081D202269e8fD7B4b37bb85f1Fd81fF126",
+      "event": "ProposalCreated",
+      "action": "notify"
+    },
+    {
+      "id": "GOVERNANCE-EXECUTION",
+      "severity": "HIGH",
+      "description": "Alert when governance proposal is executed",
+      "contract": "0xde455081D202269e8fD7B4b37bb85f1Fd81fF126",
+      "event": "ProposalExecuted",
+      "action": "escalate"
+    }
+  ],
+  "notificationChannels": {
+    "email": "security@YOUR_DOMAIN.com",
+    "slack": "#dot-protocol-security",
+    "telegram": "@dotprotocol_alerts"
+  }
+}

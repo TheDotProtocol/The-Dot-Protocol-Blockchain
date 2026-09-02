@@ -88,7 +88,7 @@ const authLimiter = rateLimit({
 const userOrderLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
-  keyGenerator: (req: any) => req.user?.id || req.ip,
+  keyGenerator: (req: any) => req.user?.id || "anonymous",
   message: { error: "Per-user order rate limit exceeded" },
 });
 

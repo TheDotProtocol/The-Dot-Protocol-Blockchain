@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dot Protocol — Bug Bounty Program</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0a0a0f; color:#e2e8f0; line-height:1.7; }
+  .page { max-width:900px; margin:0 auto; padding:60px 40px; }
+  @media print { body { background:#fff; color:#1a1a2e; } .page { padding:30px; } }
+
+  .header { text-align:center; padding:80px 0 60px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:50px; }
+  .header h1 { font-size:2.4rem; font-weight:900; background:linear-gradient(135deg,#f97316,#eab308); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+  .header .subtitle { font-size:1.1rem; color:#94a3b8; }
+  .header .meta { margin-top:20px; display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+  .header .meta span { background:rgba(255,255,255,0.04); padding:8px 18px; border-radius:8px; font-size:0.85rem; color:#94a3b8; border:1px solid rgba(255,255,255,0.06); }
+
+  .section { margin-bottom:50px; }
+  .section h2 { font-size:1.5rem; font-weight:700; color:#f8fafc; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .section h3 { font-size:1.1rem; font-weight:600; color:#e2e8f0; margin:20px 0 10px; }
+
+  .card { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:24px; margin:15px 0; }
+
+  table { width:100%; border-collapse:collapse; margin:15px 0; }
+  th { text-align:left; padding:12px; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; color:#64748b; border-bottom:1px solid rgba(255,255,255,0.06); }
+  td { padding:12px; border-bottom:1px solid rgba(255,255,255,0.03); font-size:0.9rem; }
+
+  .sev { display:inline-block; padding:3px 10px; border-radius:4px; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+  .sev.critical { background:rgba(239,68,68,0.15); color:#ef4444; }
+  .sev.high { background:rgba(249,115,22,0.15); color:#f97316; }
+  .sev.medium { background:rgba(234,179,8,0.15); color:#eab308; }
+  .sev.low { background:rgba(59,130,246,0.15); color:#3b82f6; }
+
+  .reward { font-size:1.3rem; font-weight:800; color:#22c55e; }
+  ul { padding-left:20px; margin:8px 0; }
+  li { margin:6px 0; }
+  code { background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-size:0.85rem; }
+
+  .cta { text-align:center; padding:40px 0; border-top:1px solid rgba(255,255,255,0.06); margin-top:40px; }
+  .cta a { display:inline-block; padding:14px 32px; background:linear-gradient(135deg,#f97316,#eab308); color:#000; font-weight:700; border-radius:8px; text-decoration:none; font-size:1rem; }
+  .cta p { color:#64748b; margin-top:12px; font-size:0.85rem; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <h1>🐛 Bug Bounty Program</h1>
+  <div class="subtitle">The Dot Protocol — Help us secure the ecosystem</div>
+  <div class="meta">
+    <span><strong>Launched:</strong> September 2, 2026</span>
+    <span><strong>Platform:</strong> Immunefi</span>
+    <span><strong>Total Pool:</strong> $500,000</span>
+  </div>
+</div>
+
+<div class="section">
+<h2>Overview</h2>
+<p>The Dot Protocol is committed to security. We invite security researchers and white-hat hackers to find vulnerabilities in our smart contracts, infrastructure, and applications. We offer competitive rewards for responsible disclosure of valid security issues.</p>
+
+<div class="card" style="margin-top:20px;">
+  <h3>🎯 Scope</h3>
+  <p>Our bug bounty covers the entire Dot Protocol ecosystem:</p>
+  <ul>
+    <li><strong>Smart Contracts:</strong> DPC20, Hexchange (Factory, Router, Pair, Escrow, Presale), Oracle, Stabilization, Governance, Bridge, CCIPBridge</li>
+    <li><strong>Infrastructure:</strong> Besu QBFT chain, validator consensus, RPC endpoints</li>
+    <li><strong>Applications:</strong> Hexchange DEX, Presale app, Explorer, Wallet, 3Dot Pay</li>
+    <li><strong>Backend:</strong> Hexchange API, authentication, order book engine</li>
+  </ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Reward Tiers</h2>
+
+<table>
+<tr><th>Severity</th><th>Description</th><th>Reward Range</th></tr>
+<tr>
+  <td><span class="sev critical">CRITICAL</span></td>
+  <td>Direct loss of funds, supply manipulation, complete contract takeover, bridge exploitation</td>
+  <td><span class="reward">$50,000 — $200,000</span></td>
+</tr>
+<tr>
+  <td><span class="sev high">HIGH</span></td>
+  <td>Logic errors causing incorrect behavior, oracle manipulation, access control bypass, reentrancy</td>
+  <td><span class="reward">$10,000 — $50,000</span></td>
+</tr>
+<tr>
+  <td><span class="sev medium">MEDIUM</span></td>
+  <td>Contract lock-ups, DoS vectors, front-running opportunities, information disclosure</td>
+  <td><span class="reward">$2,000 — $10,000</span></td>
+</tr>
+<tr>
+  <td><span class="sev low">LOW</span></td>
+  <td>Gas optimization issues, minor logic errors, best practice violations</td>
+  <td><span class="reward">$500 — $2,000</span></td>
+</tr>
+</table>
+
+<p style="margin-top:15px;color:#94a3b8;font-size:0.85rem;">Rewards are paid in USDC or 3DOT tokens (at reporter's choice). Critical findings may qualify for bonus rewards at the team's discretion.</p>
+</div>
+
+<div class="section">
+<h2>In-Scope Contracts</h2>
+
+<table>
+<tr><th>Contract</th><th>Chennai Testnet</th><th>Mainnet</th></tr>
+<tr><td>DPC20 (TDOT/3DOT)</td><td><code>0x542E…0185</code></td><td><code>0x84ed…ed56</code></td></tr>
+<tr><td>HexchangeFactory</td><td><code>Deployed</code></td><td><code>Deployed</code></td></tr>
+<tr><td>HexchangeRouter</td><td><code>Deployed</code></td><td><code>Deployed</code></td></tr>
+<tr><td>HexchangePair</td><td><code>Created per pool</code></td><td><code>Created per pool</code></td></tr>
+<tr><td>HexchangeEscrow</td><td><code>0xeA86…b04C</code></td><td><code>0xde45…F126</code></td></tr>
+<tr><td>HexchangePresale</td><td><code>Deployed</code></td><td><code>Deployed</code></td></tr>
+<tr><td>Oracle / DecentralizedOracle</td><td><code>0x435d…4931</code></td><td><code>0xAE7D…8eeb</code></td></tr>
+<tr><td>Stabilization</td><td><code>0x436A…8667</code></td><td><code>0x2000…a552</code></td></tr>
+<tr><td>Governance</td><td><code>0xde45…F126</code></td><td><code>0x002f…Ac81</code></td></tr>
+<tr><td>Bridge / CCIPBridge</td><td><code>0xd28f…37a4</code></td><td><code>0xe908…AE13</code></td></tr>
+<tr><td>GnosisSafeL2 (Multisig)</td><td><code>Deploying</code></td><td><code>Pending</code></td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>Out of Scope</h2>
+<ul>
+  <li>Already known issues documented in our security audit reports</li>
+  <li>Issues in third-party dependencies (OpenZeppelin, Chainlink) — report to them directly</li>
+  <li>Centralization risks that are documented and accepted (e.g., single oracle admin — being decentralized)</li>
+  <li>UI/UX issues that don't affect fund security</li>
+  <li>Rate limiting bypasses on testnet only</li>
+  <li>Issues requiring physical access to validator nodes</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Submission Guidelines</h2>
+
+<div class="card">
+<h3>How to Submit</h3>
+<ol style="padding-left:20px;">
+  <li><strong>Find a vulnerability</strong> in our smart contracts or infrastructure</li>
+  <li><strong>Write a clear report</strong> with:
+    <ul>
+      <li>Vulnerability description</li>
+      <li>Step-by-step reproduction steps</li>
+      <li>Impact assessment (what could an attacker gain?)</li>
+      <li>Potential fix recommendation</li>
+      <li>Your wallet address for reward payment</li>
+    </ul>
+  </li>
+  <li><strong>Submit via Immunefi:</strong> <code>https://immunefi.com/bounty/dotprotocol</code></li>
+  <li><strong>Wait for review</strong> — we aim to respond within 48 hours</li>
+</ol>
+</div>
+
+<div class="card" style="margin-top:15px;">
+<h3>Responsible Disclosure</h3>
+<ul>
+  <li><strong>Do NOT</strong> exploit vulnerabilities on mainnet with real user funds</li>
+  <li><strong>Do NOT</strong> publicly disclose the vulnerability before we've patched it</li>
+  <li><strong>Do</strong> test on the Chennai testnet (chain ID 1545) — RPC: <code>http://rpc-chennai.YOUR_DOMAIN.com</code></li>
+  <li><strong>Do</strong> provide sufficient proof-of-concept code</li>
+  <li><strong>Do</strong> allow 90 days for us to patch before any public disclosure</li>
+</ul>
+</div>
+</div>
+
+<div class="section">
+<h2>Eligibility</h2>
+<ul>
+  <li>You must be the first person to report the vulnerability</li>
+  <li>The vulnerability must be previously unknown to us</li>
+  <li>You must not be a current employee or contractor of The Dot Protocol</li>
+  <li>US persons and sanctioned country residents are excluded from this program</li>
+  <li>You must comply with all applicable laws</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>Program Rules</h2>
+<ol style="padding-left:20px;">
+  <li>First come, first served — only the first valid report receives a reward</li>
+  <li>Multiple reports of the same issue: only the most detailed/impactful receives reward</li>
+  <li>We reserve the right to modify reward amounts based on severity and impact</li>
+  <li>We will not pursue legal action against researchers who follow responsible disclosure</li>
+  <li>This program may be modified or terminated at any time</li>
+  <li>All decisions by The Dot Protocol team are final</li>
+</ol>
+</div>
+
+<div class="cta">
+  <a href="https://immunefi.com/bounty/dotprotocol">Submit a Report on Immunefi →</a>
+  <p>Or email: <strong>security@YOUR_DOMAIN.com</strong></p>
+  <p style="margin-top:20px;color:#475569;font-size:0.8rem;">The Dot Protocol Bug Bounty Program v1.0 — Launched September 2, 2026</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -3,12 +3,17 @@ import cors from "cors";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { orderBook, seedOrderBook } from "./engine";
+import { optionalAuth } from "./middleware/auth";
+import authRoutes from "./routes/auth";
 
 const app = express();
 const PORT = process.env.PORT || 3006;
 
 app.use(cors());
 app.use(express.json());
+
+// ─── Auth Routes ────────────────────────────────────────────────
+app.use("/api/auth", authRoutes);
 
 // Seed order book with demo data
 seedOrderBook();
@@ -30,9 +35,10 @@ app.get("/api/trades/:pair", (req, res) => {
   res.json(trades);
 });
 
-// Submit order
-app.post("/api/orders", (req, res) => {
-  const { user, pair, side, price, amount } = req.body;
+// Submit order (auth optional — user derived from token or body)
+app.post("/api/orders", optionalAuth, (req, res) => {
+  const { pair, side, price, amount } = req.body;
+  const user = req.user?.id || req.body.user;
 
   if (!user || !pair || !side || !price || !amount) {
     return res.status(400).json({ error: "Missing required fields" });

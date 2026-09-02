@@ -89,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/" className="hover:text-white transition-colors">Swap</a>
             <a href="/pool" className="hover:text-white transition-colors">Pool</a>
             <a href="/p2p" className="hover:text-white transition-colors">P2P</a>
+            <a href="/presale" className="hover:text-white transition-colors">Presale</a>
             {address ? (
               <div className="flex items-center gap-3">
                 {ci && (

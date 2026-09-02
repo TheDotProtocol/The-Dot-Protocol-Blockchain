@@ -1,0 +1,177 @@
+version: "3.8"
+
+x-node-defaults: &node-defaults
+  image: hyperledger/besu:24.12.0
+  restart: unless-stopped
+  networks:
+    besu-net:
+      ipv4_address: ${NODE_IP}
+
+services:
+  # ─── Bootnode ──────────────────────────────────────────────────
+  bootnode:
+    <<: *node-defaults
+    container_name: tdp-bootnode
+    environment:
+      - NODE_IP=172.20.0.10
+    ports:
+      - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/bootnode-key:/opt/besu/bootnode-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/bootnode-key
+      --rpc-http-enabled=true
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --rpc-http-cors-origins=*
+      --rpc-http-api=ETH,NET,WEB3,QBFT,TXPOOL,DEBUG
+      --p2p-port=30303
+      --logging=INFO
+      --host-allowlist=*
+
+  # ─── Validators 1–7 ────────────────────────────────────────────
+  validator-1:
+    <<: *node-defaults
+    container_name: tdp-validator-1
+    environment:
+      - NODE_IP=172.20.0.11
+    depends_on:
+      - bootnode
+    ports:
+      - "8545:8545"
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-1-key:/opt/besu/node-key
+      - ./mainnet/networkFiles/static-nodes.json:/opt/besu/static-nodes.json
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --rpc-http-enabled=true
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=8545
+      --rpc-http-cors-origins=*
+      --rpc-http-api=ETH,NET,WEB3,QBFT,TXPOOL,DEBUG
+      --p2p-port=30303
+      --logging=INFO
+      --host-allowlist=*
+
+  validator-2:
+    <<: *node-defaults
+    container_name: tdp-validator-2
+    environment:
+      - NODE_IP=172.20.0.12
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-2-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+  validator-3:
+    <<: *node-defaults
+    container_name: tdp-validator-3
+    environment:
+      - NODE_IP=172.20.0.13
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-3-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+  validator-4:
+    <<: *node-defaults
+    container_name: tdp-validator-4
+    environment:
+      - NODE_IP=172.20.0.14
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-4-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+  validator-5:
+    <<: *node-defaults
+    container_name: tdp-validator-5
+    environment:
+      - NODE_IP=172.20.0.15
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-5-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+  validator-6:
+    <<: *node-defaults
+    container_name: tdp-validator-6
+    environment:
+      - NODE_IP=172.20.0.16
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-6-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+  validator-7:
+    <<: *node-defaults
+    container_name: tdp-validator-7
+    environment:
+      - NODE_IP=172.20.0.17
+    depends_on:
+      - bootnode
+    volumes:
+      - ./mainnet/genesis.json:/opt/besu/genesis.json
+      - ./mainnet/validator-7-key:/opt/besu/node-key
+    command: >
+      --data-path=/opt/besu/data
+      --genesis-file=/opt/besu/genesis.json
+      --node-private-key-file=/opt/besu/node-key
+      --bootnodes=enode://${BOOTNODE_ENODE}@172.20.0.10:30303
+      --p2p-port=30303
+      --logging=INFO
+
+networks:
+  besu-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

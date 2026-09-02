@@ -1,6 +1,9 @@
 const Database = require("better-sqlite3");
 const path = require("path");
 const crypto = require("crypto");
+const bcrypt = require("bcrypt");
+
+const BCRYPT_ROUNDS = 12;
 
 const DB_PATH = path.join(__dirname, "../../data/hexchange.db");
 
@@ -127,7 +130,7 @@ function initSchema() {
   if (!existingUser) {
     const userId = crypto.randomUUID();
     const walletId = crypto.randomUUID();
-    const hash = crypto.createHash("sha256").update("demo123").digest("hex");
+    const hash = bcrypt.hashSync("demo123", BCRYPT_ROUNDS);
     db.prepare("INSERT INTO users (id, email, password_hash, wallet_address) VALUES (?, ?, ?, ?)").run(
       userId, "demo@hexchange.com", hash, "0xAA0bf607b14109A01e94a30674a01e2BA22e9694"
     );

@@ -1,7 +1,10 @@
 const express = require("express");
 const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 const { getDb } = require("../db/schema");
 const { createToken, authMiddleware } = require("../middleware/auth");
+
+const BCRYPT_ROUNDS = 12;
 
 const router = express.Router();
 
@@ -22,7 +25,7 @@ router.post("/register", (req, res) => {
   }
 
   const userId = crypto.randomUUID();
-  const passwordHash = crypto.createHash("sha256").update(password).digest("hex");
+  const passwordHash = bcrypt.hashSync(password, BCRYPT_ROUNDS);
 
   db.prepare("INSERT INTO users (id, email, password_hash, wallet_address) VALUES (?, ?, ?, ?)").run(
     userId, email, passwordHash, walletAddress || null
@@ -58,8 +61,8 @@ router.post("/login", (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  const hash = crypto.createHash("sha256").update(password).digest("hex");
-  if (hash !== user.password_hash) {
+  const valid = bcrypt.compareSync(password, user.password_hash);
+  if (!valid) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 

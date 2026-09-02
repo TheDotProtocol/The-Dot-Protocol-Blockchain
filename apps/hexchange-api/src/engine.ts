@@ -344,7 +344,13 @@ export function seedOrderBook() {
     return;
   }
 
-  // Seed demo data
+  // Seed demo data — use the demo user ID to satisfy foreign key
+  const demoUser = db.prepare("SELECT id FROM users LIMIT 1").get() as any;
+  const seedUserId = demoUser ? demoUser.id : "00000000-0000-0000-0000-000000000001";
+
+  // Disable foreign keys for seeding (random user addresses in seed data)
+  db.pragma("foreign_keys = OFF");
+
   const pairs = ["3DOT/USDT", "TDOT/USDT"];
   for (const pair of pairs) {
     for (let i = 0; i < 10; i++) {
@@ -374,4 +380,7 @@ export function seedOrderBook() {
       });
     }
   }
+
+  // Re-enable foreign keys
+  db.pragma("foreign_keys = ON");
 }

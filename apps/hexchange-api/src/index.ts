@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { orderBook, seedOrderBook } from "./engine";
@@ -11,6 +12,31 @@ const PORT = process.env.PORT || 3006;
 
 app.use(cors());
 app.use(express.json());
+
+// ─── Rate Limiting ─────────────────────────────────────────────
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later" },
+});
+
+const orderLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30, // 30 order submissions per minute
+  message: { error: "Order rate limit exceeded" },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 auth attempts per 15 min
+  message: { error: "Too many auth attempts" },
+});
+
+app.use("/api/", generalLimiter);
+app.use("/api/orders", orderLimiter);
+app.use("/api/auth", authLimiter);
 
 // ─── Auth Routes ────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);

@@ -5,6 +5,11 @@
 x-besu: &besu-defaults
   image: hyperledger/besu:25.1.0
   restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "5"
 
 services:
   validator1:

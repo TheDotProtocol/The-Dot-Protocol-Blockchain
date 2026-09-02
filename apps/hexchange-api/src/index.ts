@@ -4,7 +4,7 @@ import rateLimit from "express-rate-limit";
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { orderBook, seedOrderBook } from "./engine";
-import { authMiddleware, optionalAuth } from "./middleware/auth";
+import { authMiddleware, optionalAuth, verifyToken } from "./middleware/auth";
 import authRoutes from "./routes/auth";
 
 const app = express();
@@ -28,12 +28,10 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     if (ALLOWED_ORIGINS.indexOf(origin) !== -1) {
       return callback(null, true);
     }
-    // In development, allow all origins
     if (process.env.NODE_ENV !== "production") {
       return callback(null, true);
     }
@@ -42,12 +40,23 @@ app.use(cors({
   credentials: true,
 }));
 
-// Security headers
+// ─── M-06: Security + CSP Headers ──────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // M-06: Content Security Policy
+  res.setHeader("Content-Security-Policy", [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob:",
+    "connect-src 'self' ws://localhost:3006 wss://localhost:3006 https://rpc-chennai.YOUR_DOMAIN.com https://rpc-mainnet.YOUR_DOMAIN.com",
+    "frame-ancestors 'none'",
+  ].join("; "));
   next();
 });
 
@@ -56,8 +65,8 @@ app.use(express.json({ limit: "1mb" }));
 
 // ─── Rate Limiting ─────────────────────────────────────────────
 const generalLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute
+  windowMs: 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later" },
@@ -65,20 +74,20 @@ const generalLimiter = rateLimit({
 
 const orderLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 30, // 30 order submissions per minute
+  max: 30,
   message: { error: "Order rate limit exceeded" },
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 auth attempts per 15 min
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   message: { error: "Too many auth attempts" },
 });
 
 // ─── H-02 FIX: Per-user rate limiting ────────────────────────────
 const userOrderLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20, // 20 orders per user per minute
+  max: 20,
   keyGenerator: (req: any) => req.user?.id || req.ip,
   message: { error: "Per-user order rate limit exceeded" },
 });
@@ -95,14 +104,12 @@ seedOrderBook();
 
 // ─── REST Endpoints ───────────────────────────────────────────────
 
-// Get order book
 app.get("/api/orderbook/:pair", (req, res) => {
   const pair = decodeURIComponent(req.params.pair);
   const snapshot = orderBook.getOrderBook(pair);
   res.json(snapshot);
 });
 
-// Get recent trades
 app.get("/api/trades/:pair", (req, res) => {
   const pair = decodeURIComponent(req.params.pair);
   const limit = parseInt(req.query.limit as string) || 50;
@@ -119,7 +126,6 @@ app.post("/api/orders", authMiddleware, userOrderLimiter, (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // Validate inputs
   const parsedPrice = parseFloat(price);
   const parsedAmount = parseFloat(amount);
   if (isNaN(parsedPrice) || isNaN(parsedAmount) || parsedPrice <= 0 || parsedAmount <= 0) {
@@ -144,18 +150,15 @@ app.delete("/api/orders/:id", authMiddleware, (req, res) => {
   }
 });
 
-// Get user orders
 app.get("/api/orders/:pair/:user", (req, res) => {
   const orders = orderBook.getUserOrders(req.params.pair, req.params.user);
   res.json(orders);
 });
 
-// Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: Date.now() });
 });
 
-// Available pairs
 app.get("/api/pairs", (req, res) => {
   res.json(["3DOT/USDT", "TDOT/USDT", "3DOT/BTC", "3DOT/BNB", "3DOT/USDC", "3DOT/XRP"]);
 });
@@ -165,17 +168,49 @@ app.get("/api/pairs", (req, res) => {
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
-// WebSocket connections per pair
 const pairSubscribers: Map<string, Set<WebSocket>> = new Map();
 
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, req) => {
   console.log("WebSocket client connected");
+
+  // ─── L-03: WebSocket authentication ──────────────────────────────
+  let authenticated = false;
+  let userId: string | null = null;
+
+  // Check for auth token in URL query params or first message
+  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+  const token = url.searchParams.get("token");
+
+  if (token) {
+    const data = verifyToken(token) as any;
+    if (data) {
+      authenticated = true;
+      userId = data.userId;
+      console.log(`WS authenticated as user: ${userId}`);
+    }
+  }
 
   let subscribedPair: string | null = null;
 
   ws.on("message", (data) => {
     try {
       const msg = JSON.parse(data.toString());
+
+      // If not authenticated, first message must be auth
+      if (!authenticated) {
+        if (msg.type === "auth" && msg.token) {
+          const authData = verifyToken(msg.token) as any;
+          if (authData) {
+            authenticated = true;
+            userId = authData.userId;
+            ws.send(JSON.stringify({ type: "auth", success: true }));
+            console.log(`WS authenticated as user: ${userId}`);
+            return;
+          }
+        }
+        ws.send(JSON.stringify({ type: "auth", success: false, error: "Authentication required" }));
+        return;
+      }
 
       if (msg.type === "subscribe" && msg.pair) {
         subscribedPair = msg.pair;
@@ -184,11 +219,9 @@ wss.on("connection", (ws) => {
         }
         pairSubscribers.get(msg.pair)!.add(ws);
 
-        // Send initial snapshot
         const snapshot = orderBook.getOrderBook(msg.pair);
         ws.send(JSON.stringify({ type: "snapshot", data: snapshot }));
 
-        // Subscribe to updates
         orderBook.subscribe(msg.pair, (snap) => {
           const subs = pairSubscribers.get(msg.pair);
           if (subs) {

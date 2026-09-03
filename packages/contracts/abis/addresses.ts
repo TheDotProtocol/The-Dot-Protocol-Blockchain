@@ -8,7 +8,7 @@ export const CHAIN_CONFIG = {
     name: "Dot Protocol Chennai Testnet",
     rpcUrl: "http://127.0.0.1:8545",
     currency: { name: "Test DOT", symbol: "TDOT", decimals: 18 },
-    explorer: "https://testnet.dotprotocolscan.com",
+    explorer: "https://testnet-explorer.YOUR_DOMAIN.com",
   },
   mainnet: {
     chainId: 1546,
@@ -16,7 +16,7 @@ export const CHAIN_CONFIG = {
     name: "Dot Protocol Mainnet",
     rpcUrl: "http://127.0.0.1:9545",
     currency: { name: "3DOT", symbol: "3DOT", decimals: 18 },
-    explorer: "https://dotprotocolscan.com",
+    explorer: "https://explorer.YOUR_DOMAIN.com",
   },
 } as const;
 

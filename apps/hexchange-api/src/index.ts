@@ -18,12 +18,13 @@ const ALLOWED_ORIGINS = [
   "http://localhost:3003",
   "http://localhost:3005",
   "http://localhost:3006",
-  "https://hexchange.YOUR_DOMAIN.com",
-  "https://YOUR_DOMAIN.com",
-  "https://www.YOUR_DOMAIN.com",
-  "https://presale.YOUR_DOMAIN.com",
-  "https://wallet.YOUR_DOMAIN.com",
-  "https://pay.YOUR_DOMAIN.com",
+  // Add production origins here when deploying:
+  // "https://hexchange.YOUR_DOMAIN.com",
+  // "https://YOUR_DOMAIN.com",
+  // "https://www.YOUR_DOMAIN.com",
+  // "https://presale.YOUR_DOMAIN.com",
+  // "https://wallet.YOUR_DOMAIN.com",
+  // "https://pay.YOUR_DOMAIN.com",
 ];
 
 app.use(cors({
@@ -54,7 +55,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob:",
-    "connect-src 'self' ws://localhost:3006 wss://localhost:3006 https://rpc-chennai.YOUR_DOMAIN.com https://rpc-mainnet.YOUR_DOMAIN.com",
+    "connect-src 'self' ws://localhost:3006 wss://localhost:3006",
     "frame-ancestors 'none'",
   ].join("; "));
   next();

@@ -28,7 +28,7 @@
     "adminFunctions": {
       "enabled": true,
       "functions": ["pause", "unpause", "rebase", "emergencyRebaseAndPause", "grantRole", "renounceRole"],
-      "notify": ["security@YOUR_DOMAIN.com", "#dot-protocol-security"]
+      "notify": ["security@YOUR_DOMAIN.com", "#YOUR_CHANNEL"]
     },
     "governance": {
       "enabled": true,
@@ -41,7 +41,7 @@
     }
   },
   "dashboard": {
-    "url": "https://dashboard.tenderly.co/dot-protocol",
+    "url": "https://dashboard.tenderly.co/YOUR_PROJECT",
     "shared": true
   }
 }

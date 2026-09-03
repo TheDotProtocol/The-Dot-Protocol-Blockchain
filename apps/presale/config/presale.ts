@@ -25,7 +25,7 @@ export const CHENNAI_CHAIN = {
     symbol: 'TDOT',
     decimals: 18,
   },
-  blockExplorerUrl: 'https://testnet.dotprotocolscan.com',
+  blockExplorerUrl: 'https://testnet-explorer.YOUR_DOMAIN.com',
   dpc20: {
     address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
     symbol: 'TDOT',

@@ -7,14 +7,14 @@ export const CHAINS = {
     chainName: "Dot Protocol Chennai Testnet",
     rpcUrls: ["http://127.0.0.1:8545"],
     nativeCurrency: { name: "Test DOT", symbol: "TDOT", decimals: 18 },
-    blockExplorerUrls: ["https://testnet.dotprotocolscan.com"],
+    blockExplorerUrls: ["https://testnet-explorer.YOUR_DOMAIN.com"],
   },
   1546: {
     chainId: "0x60A",
     chainName: "Dot Protocol Mainnet",
     rpcUrls: ["http://127.0.0.1:9545"],
     nativeCurrency: { name: "3DOT", symbol: "3DOT", decimals: 18 },
-    blockExplorerUrls: ["https://dotprotocolscan.com"],
+    blockExplorerUrls: ["https://explorer.YOUR_DOMAIN.com"],
   },
 } as const;
 

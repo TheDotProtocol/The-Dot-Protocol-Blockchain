@@ -75,7 +75,7 @@
   ],
   "notificationChannels": {
     "email": "security@YOUR_DOMAIN.com",
-    "slack": "#dot-protocol-security",
-    "telegram": "@dotprotocol_alerts"
+    "slack": "#YOUR_CHANNEL",
+    "telegram": "@YOUR_ALERTS"
   }
 }

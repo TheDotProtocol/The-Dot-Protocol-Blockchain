@@ -31,6 +31,8 @@ export const CONTRACTS = {
     HexchangeRouter: "0x4C0bb94B0b99cB14eBFbC8fE790533aba3b4373B",
     HexchangeEscrow: "0xeA86701A2D46316D6BE3b031Ad719Ee0d9bbc04C",
     HexchangePresale: "0x44Ca97cC50ae80Dcc513faDbFfda6e4C637692eA",
+    GnosisSafeL2: "0x749C753249a83a3499b3Cd10a95619b4C5a5A62B",
+    CCIPBridge: "0x2ed976a21235DC7071E192D70b5124f1Dc6eF1e2",
   },
   mainnet: {
     DPC20: "0x84ed5E46280c6911551925329C3af6c58e4ced56",
@@ -42,6 +44,8 @@ export const CONTRACTS = {
     HexchangeRouter: "0x436A576D59f7C38BC804ED29251601Eb176f8667",
     HexchangeEscrow: "0xde455081D202269e8fD7B4b37bb85f1Fd81fF126",
     HexchangePresale: "0xd28f1f5eb7B605670eE295F00Ae512484e7D37a4",
+    GnosisSafeL2: "0x011E16D98Dba6dcDED38d4487839E4a3A6044779",
+    CCIPBridge: "0xF85bc7c4F5929E6BDDb0937521EDCf2cB578855b",
   },
 } as const;
 

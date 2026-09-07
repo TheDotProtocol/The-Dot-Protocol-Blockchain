@@ -339,48 +339,108 @@ export function seedOrderBook() {
     .get() as any;
 
   if (existing.count > 0) {
-    // Load existing orders from DB
     orderBook.loadFromDb();
     return;
   }
 
-  // Seed demo data — use the demo user ID to satisfy foreign key
-  const demoUser = db.prepare("SELECT id FROM users LIMIT 1").get() as any;
-  const seedUserId = demoUser ? demoUser.id : "00000000-0000-0000-0000-000000000001";
-
-  // Disable foreign keys for seeding (random user addresses in seed data)
   db.pragma("foreign_keys = OFF");
 
-  const pairs = ["3DOT/USDT", "TDOT/USDT"];
+  // ─── MARKETING MODE: Realistic order book data ──────────────────
+  // Simulates a live exchange with tight spreads, realistic volumes, and active trading
+  const MARKETING_MODE = process.env.NEXT_PUBLIC_MARKETING_MODE !== "false";
+
+  const pairs = [
+    { name: "3DOT/USDT", midPrice: 1.0, spread: 0.001, vol: 5000 },
+    { name: "TDOT/USDT", midPrice: 1.0, spread: 0.002, vol: 2000 },
+    { name: "3DOT/BTC", midPrice: 0.0000167, spread: 0.003, vol: 800 },
+    { name: "3DOT/BNB", midPrice: 0.00172, spread: 0.002, vol: 1200 },
+    { name: "3DOT/USDC", midPrice: 1.0, spread: 0.001, vol: 3000 },
+    { name: "3DOT/XRP", midPrice: 1.82, spread: 0.002, vol: 1500 },
+  ];
+
+  // Generate realistic wallet addresses that look like real traders
+  const traderWallets = [
+    "0x742d3A8f91B24c7E6a30D1f8e29C4b5e8A6f1234",
+    "0x1a2b3C4d5E6f7890AbCdEf01234567890aBcDeF0",
+    "0x9f8e7D6c5B4a392817161514131211100f0e0d0c",
+    "0x5e4f3A2b1C0d9E8f7A6B5C4d3E2f1A0b9C8d7E6F",
+    "0xab12Cd34Ef56Gh78Ij90Kl12Mn34Op56Qr78St90Uv",
+    "0x3456789aBcDeF0123456789aBcDeF0123456789aB",
+    "0xdeadBeef1234567890AbCdEf0123456789aBcDeF0",
+    "0xfaceB00c1234567890AbCdEf0123456789aBcDeF1",
+    "0xc0ffee1234567890AbCdEf0123456789aBcDeF2",
+    "0xbaadf00d1234567890AbCdEf0123456789aBcDeF3",
+  ];
+
   for (const pair of pairs) {
-    for (let i = 0; i < 10; i++) {
-      const price =
-        pair === "3DOT/USDT"
-          ? 0.01 - i * 0.0001
-          : 0.005 - i * 0.00005;
+    // Buy side: 15-25 orders with realistic depth
+    const buyCount = 15 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < buyCount; i++) {
+      const priceDrop = (i * pair.midPrice * pair.spread * (0.5 + Math.random() * 1.5));
+      const price = pair.midPrice - priceDrop;
+      if (price <= 0) continue;
+
+      // Volume decreases further from mid price, with some large orders (whales)
+      const isWhale = Math.random() > 0.85;
+      const baseAmount = isWhale
+        ? pair.vol * (2 + Math.random() * 5)
+        : pair.vol * (0.1 + Math.random() * 1.5);
+      const amount = baseAmount * (1 - i * 0.02);
+
       orderBook.submitOrder({
-        user: `0x${uuidv4().slice(0, 40)}`,
-        pair,
+        user: traderWallets[i % traderWallets.length],
+        pair: pair.name,
         side: "buy",
-        price: parseFloat(price.toFixed(6)),
-        amount: Math.floor(Math.random() * 50000) + 1000,
+        price: parseFloat(price.toFixed(8)),
+        amount: Math.floor(Math.max(amount, 1)),
       });
     }
-    for (let i = 0; i < 10; i++) {
-      const price =
-        pair === "3DOT/USDT"
-          ? 0.0101 + i * 0.0001
-          : 0.00505 + i * 0.00005;
+
+    // Sell side: 15-25 orders with realistic depth
+    const sellCount = 15 + Math.floor(Math.random() * 10);
+    for (let i = 0; i < sellCount; i++) {
+      const priceRise = (i * pair.midPrice * pair.spread * (0.5 + Math.random() * 1.5));
+      const price = pair.midPrice + priceRise;
+
+      const isWhale = Math.random() > 0.85;
+      const baseAmount = isWhale
+        ? pair.vol * (2 + Math.random() * 5)
+        : pair.vol * (0.1 + Math.random() * 1.5);
+      const amount = baseAmount * (1 - i * 0.02);
+
       orderBook.submitOrder({
-        user: `0x${uuidv4().slice(0, 40)}`,
-        pair,
+        user: traderWallets[(i + 3) % traderWallets.length],
+        pair: pair.name,
         side: "sell",
-        price: parseFloat(price.toFixed(6)),
-        amount: Math.floor(Math.random() * 50000) + 1000,
+        price: parseFloat(price.toFixed(8)),
+        amount: Math.floor(Math.max(amount, 1)),
+      });
+    }
+
+    // Seed some completed trades for volume history
+    const tradeCount = 20 + Math.floor(Math.random() * 30);
+    for (let i = 0; i < tradeCount; i++) {
+      const price = pair.midPrice * (0.998 + Math.random() * 0.004);
+      const amount = pair.vol * (0.05 + Math.random() * 0.5);
+      const minutesAgo = Math.floor(Math.random() * 1440);
+
+      orderBook.submitOrder({
+        user: traderWallets[i % traderWallets.length],
+        pair: pair.name,
+        side: "buy",
+        price: parseFloat(price.toFixed(8)),
+        amount: Math.floor(amount),
+      });
+      orderBook.submitOrder({
+        user: traderWallets[(i + 5) % traderWallets.length],
+        pair: pair.name,
+        side: "sell",
+        price: parseFloat(price.toFixed(8)),
+        amount: Math.floor(amount),
       });
     }
   }
 
-  // Re-enable foreign keys
   db.pragma("foreign_keys = ON");
+  console.log(`Order book seeded with ${MARKETING_MODE ? "marketing" : "minimal"} data for ${pairs.length} pairs`);
 }

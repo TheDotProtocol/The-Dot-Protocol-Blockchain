@@ -9,6 +9,7 @@ module.exports = {
         PORT: 3006,
         JWT_SECRET: require("crypto").randomBytes(32).toString("hex"),
         NODE_ENV: "development",
+        MARKETING_MODE: "true",
       },
       max_restarts: 3,
       restart_delay: 2000,

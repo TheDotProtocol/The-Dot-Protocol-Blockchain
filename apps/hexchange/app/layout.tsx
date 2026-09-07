@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
+"use client";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Hexchange — The Dot Protocol Exchange",
-  description: "The world's first true hybrid crypto exchange — seamlessly switch between CEX and DEX",
-};
+
 
 const NAV_ITEMS = [
   { label: "Swap", href: "/" },

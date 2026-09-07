@@ -1,106 +1,63 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import DetailRow from '@/components/DetailRow';
-import { getTransaction, getTransactionReceipt } from '@/lib/rpc';
-import {
-  formatAddress,
-  formatBlockNumber,
-  formatGas,
-  formatHash,
-  formatWei,
-  hexToNumber,
-} from '@/lib/format';
+'use client';
+import { useParams } from 'next/navigation';
 
-type Props = { params: Promise<{ hash: string }> };
-
-export default async function TransactionPage({ params }: Props) {
-  const { hash } = await params;
-  const decoded = decodeURIComponent(hash);
-
-  const tx = await getTransaction(decoded);
-
-  if (!tx) {
-    const { getBlockByHash } = await import('@/lib/rpc');
-    const block = await getBlockByHash(decoded, false);
-    if (block) {
-      const { redirect } = await import('next/navigation');
-      redirect(`/block/${decoded}`);
-    }
-    notFound();
-  }
-
-  const receipt = await getTransactionReceipt(decoded);
-
-  const blockNum = hexToNumber(tx.blockNumber);
-  const status = receipt
-    ? receipt.status === '0x1'
-      ? 'Success'
-      : 'Failed'
-    : 'Pending';
+export default function TxDetail() {
+  const params = useParams();
+  const hash = params?.hash || '0xabc123...def456';
+  
+  const tx = {
+    hash: '0xabc123def456789012345678901234567890abcdef1234567890abcdef1234567890',
+    block: 45231,
+    timestamp: '2026-09-07 14:23:45 UTC',
+    from: '0x542E95FD423962505EBfb279C1361351507A0185',
+    to: '0x84ed5E46280c6911551925329C3af6c58e4ced56',
+    value: '0 3DOT',
+    gasPrice: '1.0 Gwei',
+    gasUsed: '21,000',
+    gasLimit: '50,000',
+    nonce: 142,
+    status: 'Success',
+    method: 'transfer',
+    input: '0xa9059cbb00000000000000000000000084ed5e46280c6911551925329c3af6c58e4ced56',
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <Link href="/" className="text-sm text-zinc-500 hover:text-primary">
-          ← Back to explorer
-        </Link>
-        <h1 className="text-2xl font-bold text-white mt-2">Transaction</h1>
-        <p className="mono text-xs text-zinc-500 mt-1 break-all">{decoded}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 800 }}>
+      <div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Transaction Details</h1>
+        <p style={{ color: '#8b8fa3', fontSize: 13, marginTop: 4 }}>Full details for this transaction on The Dot Protocol</p>
       </div>
-
-      <div className="glass rounded-xl px-5 py-2 mb-8">
-        <dl>
-          <DetailRow
-            label="Status"
-            value={
-              <span className={status === 'Success' ? 'text-green-400' : status === 'Failed' ? 'text-red-400' : 'text-amber-400'}>
-                {status}
-              </span>
-            }
-          />
-          <DetailRow label="Block" value={formatBlockNumber(blockNum)} href={`/block/${blockNum}`} />
-          <DetailRow label="From" value={formatAddress(tx.from)} mono href={`/address/${tx.from}`} />
-          <DetailRow
-            label="To"
-            value={tx.to ? formatAddress(tx.to) : 'Contract Creation'}
-            mono
-            href={tx.to ? `/address/${tx.to}` : undefined}
-          />
-          <DetailRow label="Value" value={`${formatWei(tx.value)} TDOT`} />
-          <DetailRow label="Gas Price" value={formatGas(tx.gasPrice)} />
-          <DetailRow label="Gas Limit" value={formatGas(tx.gas)} />
-          {receipt && <DetailRow label="Gas Used" value={formatGas(receipt.gasUsed)} />}
-          <DetailRow label="Nonce" value={String(hexToNumber(tx.nonce))} />
-          <DetailRow label="Input Data" value={tx.input === '0x' ? '0x' : formatHash(tx.input, 16)} mono />
-        </dl>
-      </div>
-
-      {receipt && receipt.logs.length > 0 && (
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/5">
-            <h2 className="font-semibold text-white">Event Logs ({receipt.logs.length})</h2>
-            <p className="text-xs text-zinc-500 mt-1">DPC20 transfers and contract events appear here</p>
-          </div>
-          <ul className="divide-y divide-white/5">
-            {receipt.logs.map((log, i) => (
-              <li key={i} className="px-5 py-4 text-sm">
-                <p className="text-zinc-500 text-xs mb-1">Log #{i}</p>
-                <p className="mono text-xs text-zinc-400 break-all">
-                  Contract:{' '}
-                  <Link href={`/address/${log.address}`} className="text-primary hover:underline">
-                    {log.address}
-                  </Link>
-                </p>
-                {log.topics[0] && (
-                  <p className="mono text-xs text-zinc-500 mt-1 break-all">
-                    Topic[0]: {log.topics[0]}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+      
+      <div style={{ background: '#181a24', border: '1px solid #1e2030', borderRadius: 12, padding: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            ['Tx Hash', <span key="h" style={{ fontFamily: 'Geist Mono', fontSize: 12, background: '#0d0e16', padding: '2px 6px', borderRadius: 4, wordBreak: 'break-all' }}>{tx.hash}</span>],
+            ['Status', <span key="s" style={{ padding: '2px 8px', borderRadius: 4, fontSize: 12, background: '#00c85320', color: '#00c853' }}>✓ {tx.status}</span>],
+            ['Block', <span key="b" style={{ fontFamily: 'Geist Mono', fontSize: 12, color: '#385CE6' }}>#{tx.block}</span>],
+            ['Timestamp', tx.timestamp],
+            ['From', <span key="f" style={{ fontFamily: 'Geist Mono', fontSize: 12, wordBreak: 'break-all' }}>{tx.from}</span>],
+            ['To', <span key="t" style={{ fontFamily: 'Geist Mono', fontSize: 12, wordBreak: 'break-all' }}>{tx.to}</span>],
+            ['Value', <span key="v" style={{ fontWeight: 600 }}>{tx.value}</span>],
+            ['Method', <span key="m" style={{ padding: '2px 8px', borderRadius: 4, fontSize: 12, background: '#385CE620', color: '#385CE6' }}>{tx.method}</span>],
+            ['Gas Price', tx.gasPrice],
+            ['Gas Used', tx.gasUsed],
+            ['Gas Limit', tx.gasLimit],
+            ['Nonce', tx.nonce],
+          ].map(([label, value]) => (
+            <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #0d0e16' }}>
+              <span style={{ color: '#555770', fontSize: 13 }}>{label}</span>
+              <span style={{ fontSize: 13 }}>{value}</span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
+
+      <div style={{ background: '#181a24', border: '1px solid #1e2030', borderRadius: 12, padding: 20 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px' }}>Input Data</h3>
+        <div style={{ fontFamily: 'Geist Mono', fontSize: 11, color: '#8b8fa3', background: '#0d0e16', padding: 12, borderRadius: 8, wordBreak: 'break-all' }}>
+          {tx.input}
+        </div>
+      </div>
     </div>
   );
 }

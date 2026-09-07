@@ -68,5 +68,14 @@ module.exports = {
       max_restarts: 3,
       restart_delay: 3000,
     },
+    {
+      name: "tdp-analytics",
+      cwd: "./apps/analytics",
+      script: "../../node_modules/.bin/next",
+      args: "dev -p 3008 -H localhost",
+      env: { NODE_ENV: "development" },
+      max_restarts: 3,
+      restart_delay: 3000,
+    },
   ],
 };

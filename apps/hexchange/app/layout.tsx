@@ -1,231 +1,190 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import Image from "next/image";
+import type { Metadata } from "next";
 import "./globals.css";
 
-const CHAINS: Record<number, { name: string; hex: string; rpc: string; currency: string }> = {
-  1545: { name: "Chennai Testnet", hex: "0x609", rpc: "http://127.0.0.1:8545", currency: "TDOT" },
-  1546: { name: "Mainnet", hex: "0x60A", rpc: "http://127.0.0.1:9545", currency: "3DOT" },
+export const metadata: Metadata = {
+  title: "Hexchange — The Dot Protocol Exchange",
+  description: "The world's first true hybrid crypto exchange — seamlessly switch between CEX and DEX",
 };
 
-type WalletType = "metamask" | "walletconnect" | null;
+const NAV_ITEMS = [
+  { label: "Swap", href: "/" },
+  { label: "Trade", href: "/trade" },
+  { label: "Pool", href: "/pool" },
+  { label: "P2P", href: "/p2p" },
+  { label: "Presale", href: "/presale" },
+  { label: "Portfolio", href: "/portfolio" },
+];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [address, setAddress] = useState("");
-  const [chainId, setChainId] = useState(0);
-  const [balance, setBalance] = useState("");
-  const [connecting, setConnecting] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [mode, setMode] = useState<"dex" | "cex">("dex");
-
-  const connect = async (type: WalletType = "metamask") => {
-    setConnecting(true);
-    setShowModal(false);
-    try {
-      if (type === "metamask") {
-        if (!(window as any)?.ethereum) { alert("Please install MetaMask"); return; }
-        const provider = new ethers.BrowserProvider((window as any).ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = await provider.getSigner();
-        const addr = await signer.getAddress();
-        const net = await provider.getNetwork();
-        const bal = await provider.getBalance(addr);
-        setAddress(addr);
-        setChainId(Number(net.chainId));
-        setBalance(ethers.formatEther(bal));
-
-        if (Number(net.chainId) !== 1546) {
-          try {
-            await (window as any).ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x60A" }] });
-          } catch {
-            await (window as any).ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [{ chainId: "0x60A", chainName: "Dot Protocol Mainnet", rpcUrls: ["http://127.0.0.1:9545"], nativeCurrency: { name: "3DOT", symbol: "3DOT", decimals: 18 } }],
-            });
-          }
-          const p2 = new ethers.BrowserProvider((window as any).ethereum);
-          const s2 = await p2.getSigner();
-          const a2 = await s2.getAddress();
-          const b2 = await p2.getBalance(a2);
-          setAddress(a2); setChainId(1546); setBalance(ethers.formatEther(b2));
-        }
-      } else if (type === "walletconnect") {
-        alert("WalletConnect: In production, this opens the WalletConnect modal.\nFor demo, please use MetaMask with the Dot Protocol network.");
-        setConnecting(false);
-        return;
-      }
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  useEffect(() => {
-    const eth = (window as any)?.ethereum;
-    if (!eth) return;
-    const h = (accounts: string[]) => { if (accounts.length > 0) connect(); else { setAddress(""); setChainId(0); setBalance(""); } };
-    const c = () => connect();
-    eth.on("accountsChanged", h);
-    eth.on("chainChanged", c);
-    return () => { eth.removeListener("accountsChanged", h); eth.removeListener("chainChanged", c); };
-  }, []);
-
-  const ci = CHAINS[chainId];
-
   return (
     <html lang="en">
-      <body className="bg-[#05080f] text-white min-h-screen">
-        {/* Top Bar */}
-        <nav className="border-b border-white/5 px-6 py-3 flex items-center justify-between bg-[#0a0e17]/80 backdrop-blur-xl sticky top-0 z-50">
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center gap-2">
-              <Image
-                src="/logos/hexchange-logo-dark.png"
-                alt="Hexchange"
-                width={140}
-                height={32}
-                className="h-8 w-auto"
-                priority
-              />
-            </a>
-            <span className="text-[10px] bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full border border-orange-500/20 font-medium">
-              HYBRID EXCHANGE
-            </span>
-          </div>
-
-          {/* Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            <a href="/" className="nav-link">Swap</a>
-            <a href="/trade" className="nav-link">Trade</a>
-            <a href="/pool" className="nav-link">Pool</a>
-            <a href="/p2p" className="nav-link">P2P</a>
-            <a href="/portfolio" className="nav-link">Portfolio</a>
-            <a href="/presale" className="nav-link">Presale</a>
-          </div>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            {/* CEX/DEX Mode Toggle */}
-            <div className="flex items-center bg-[#111827] rounded-lg p-0.5 border border-white/5">
-              <button
-                onClick={() => setMode("dex")}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  mode === "dex"
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                DEX
-              </button>
-              <button
-                onClick={() => setMode("cex")}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  mode === "cex"
-                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                CEX
-              </button>
-            </div>
-
-            {/* Network indicator */}
-            {address && ci && (
-              <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${
-                chainId === 1546 ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-              }`}>
-                {ci.name}
+      <body style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+        {/* ─── Top Bar (Figma: top-bar 1440x64 bg-secondary) ─── */}
+        <header style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 64,
+          padding: "0 var(--space-2xl)",
+          background: "var(--bg-secondary)",
+          borderBottom: "1px solid var(--border-subtle)",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+        }}>
+          {/* Left: Logo + Nav */}
+          <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            {/* Logo */}
+            <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+              <div style={{
+                width: 28, height: 28,
+                background: "var(--accent-orange)",
+                borderRadius: "var(--radius-md)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 14,
+                fontWeight: 700,
+                color: "white",
+              }}>H</div>
+              <span style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                Hexchange
               </span>
-            )}
+            </a>
 
-            {/* Connect / Wallet */}
-            {address ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">{parseFloat(balance).toFixed(3)} {ci?.currency}</span>
-                <button className="bg-[#1f2937] hover:bg-[#2a3441] px-3 py-2 rounded-lg text-xs font-mono transition-colors border border-white/5">
-                  {address.slice(0, 6)}...{address.slice(-4)}
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowModal(true)}
-                disabled={connecting}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 shadow-lg shadow-orange-500/20"
-              >
-                {connecting ? "Connecting..." : "Connect Wallet"}
-              </button>
-            )}
+            {/* Nav */}
+            <nav style={{ display: "flex", gap: 4 }}>
+              {NAV_ITEMS.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "var(--text-tertiary)",
+                    textDecoration: "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
           </div>
-        </nav>
 
-        {/* Wallet Connect Modal */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setShowModal(false)}>
-            <div className="bg-[#111827] rounded-2xl p-6 w-96 border border-white/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-center mb-4">
-                <Image src="/logos/hexchange-logo-dark.png" alt="Hexchange" width={120} height={28} className="h-7 w-auto" />
-              </div>
-              <h3 className="text-lg font-semibold mb-4 text-center">Connect Wallet</h3>
-
-              <button
-                onClick={() => connect("metamask")}
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#1a1f2e] hover:bg-[#222838] transition-colors mb-3 border border-white/5"
-              >
-                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-xl">🦊</div>
-                <div className="text-left">
-                  <div className="font-medium text-sm">MetaMask</div>
-                  <div className="text-xs text-gray-500">Browser extension wallet</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => connect("walletconnect")}
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#1a1f2e] hover:bg-[#222838] transition-colors mb-3 border border-white/5"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-xl">🔗</div>
-                <div className="text-left">
-                  <div className="font-medium text-sm">WalletConnect</div>
-                  <div className="text-xs text-gray-500">Scan with mobile wallet</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => connect("walletconnect")}
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-[#1a1f2e] hover:bg-[#222838] transition-colors border border-white/5"
-              >
-                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-xl">💎</div>
-                <div className="text-left">
-                  <div className="font-medium text-sm">3Dot Wallet</div>
-                  <div className="text-xs text-gray-500">Dot Protocol native wallet</div>
-                </div>
-              </button>
-
-              <p className="text-[10px] text-gray-600 text-center mt-4">
-                By connecting, you agree to the Terms of Service
-              </p>
+          {/* Right: Mode Toggle + Wallet */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Mode Toggle (Figma: mode-toggle 221x34 bg-quaternary) */}
+            <div style={{
+              display: "flex",
+              background: "var(--bg-quaternary)",
+              borderRadius: "var(--radius-md)",
+              padding: 3,
+              gap: 2,
+            }}>
+              <a href="/trade" style={{
+                padding: "5px 20px",
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--text-muted)",
+                textDecoration: "none",
+                transition: "all 0.15s",
+              }}>CEX</a>
+              <a href="/" style={{
+                padding: "5px 20px",
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 600,
+                background: "var(--bg-secondary)",
+                color: "var(--accent-orange)",
+                textDecoration: "none",
+                border: "1px solid rgba(249, 115, 22, 0.2)",
+              }}>DEX</a>
             </div>
+
+            {/* Network Selector (Figma: net-dropdown 101x28 bg-primary) */}
+            <button style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 10px",
+              borderRadius: "var(--radius-sm)",
+              background: "var(--bg-primary)",
+              border: "1px solid var(--border-subtle)",
+              color: "var(--text-secondary)",
+              fontSize: 12,
+              fontFamily: "var(--font-mono)",
+              cursor: "pointer",
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-green)" }}></span>
+              Dot Mainnet
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ opacity: 0.5 }}>
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            {/* Connect Wallet (Figma: connect-wallet 128x36 bg-blue) */}
+            <button
+              id="connect-wallet"
+              style={{
+                padding: "7px 16px",
+                borderRadius: "var(--radius-md)",
+                background: "var(--accent-blue)",
+                color: "white",
+                fontSize: 12,
+                fontWeight: 600,
+                fontFamily: "var(--font-body)",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.background = "var(--accent-blue-hover)")}
+              onMouseOut={(e) => (e.currentTarget.style.background = "var(--accent-blue)")}
+            >
+              Connect Wallet
+            </button>
+
+            {/* Avatar (Figma: avatar 32x32 radius-full) */}
+            <div style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, var(--accent-orange), var(--accent-blue))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}>0x</div>
           </div>
-        )}
+        </header>
 
-        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
+        {/* ─── Bottom Status Strip (Figma: bottom-strip 1440x36) ─── */}
+        {children}
 
-        {/* Footer */}
-        <footer className="border-t border-white/5 py-8 mt-12">
-          <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Image src="/logos/hexchange-logo-dark.png" alt="Hexchange" width={100} height={24} className="h-5 w-auto opacity-40" />
-              <span className="text-xs text-gray-600">The World&apos;s First True Hybrid Crypto Exchange</span>
-            </div>
-            <div className="flex items-center gap-6 text-xs text-gray-600">
-              <a href="#" className="hover:text-gray-400">Terms</a>
-              <a href="#" className="hover:text-gray-400">Privacy</a>
-              <a href="#" className="hover:text-gray-400">Docs</a>
-              <a href="#" className="hover:text-gray-400">GitHub</a>
-            </div>
+        <footer style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: 36,
+          padding: "0 var(--space-2xl)",
+          background: "var(--bg-secondary)",
+          borderTop: "1px solid var(--border-subtle)",
+          fontSize: 11,
+          color: "var(--text-muted)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-green)" }}></span>
+            System Status: Operational
+          </div>
+          <div style={{ display: "flex", gap: 24, fontFamily: "var(--font-mono)" }}>
+            <span>Network: 1.2s avg block</span>
+            <span>Gas: 0.000001 gwei</span>
+            <span>Block: #5,095</span>
           </div>
         </footer>
       </body>

@@ -57,3 +57,5 @@ database/
 # apps/presale/preview.html
 # apps/wallet/preview.html
 # apps/ico/preview.html
+figma-exports/
+scripts/export-figma.*

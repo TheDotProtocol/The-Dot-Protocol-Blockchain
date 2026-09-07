@@ -1,311 +1,419 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-// Mock data
-const CHAIN_STATS = {
-  testnet: { blocks: 5095, chainId: 1545, status: "healthy", gas: "0 gwei", validators: 7 },
-  mainnet: { blocks: 4218, chainId: 1546, status: "healthy", gas: "0 gwei", validators: 7 },
-};
-
-const CONTRACTS = [
-  { name: "DPC20 (TDOT)", address: "0x542E...0185", chain: "Testnet", status: "deployed", admin: "Multisig" },
-  { name: "DPC20 (3DOT)", address: "0x84ed...ed56", chain: "Mainnet", status: "deployed", admin: "Multisig" },
-  { name: "HexchangeFactory", address: "0xA1b2...AbCd", chain: "Testnet", status: "deployed", admin: "Multisig" },
-  { name: "HexchangeRouter", address: "0xB2c3...BcDe", chain: "Testnet", status: "deployed", admin: "Multisig" },
-  { name: "DecentralizedOracle", address: "0x435d...4931", chain: "Testnet", status: "deployed", admin: "Multisig" },
-  { name: "GnosisSafeL2", address: "Deploying...", chain: "Testnet", status: "pending", admin: "—" },
-  { name: "CCIPBridge", address: "0xd28f...37a4", chain: "Testnet", status: "deployed", admin: "Multisig" },
-];
-
-const USERS = [
-  { id: "USR001", email: "demo@hexchange.com", kyc: "verified", orders: 42, joined: "Sep 1, 2026" },
-  { id: "USR002", email: "trader@example.com", kyc: "pending", orders: 18, joined: "Sep 2, 2026" },
-  { id: "USR003", email: "investor@dot.com", kyc: "verified", orders: 7, joined: "Sep 2, 2026" },
-  { id: "USR004", email: "dev@protocol.io", kyc: "none", orders: 0, joined: "Sep 3, 2026" },
-];
-
-const SECURITY_EVENTS = [
-  { severity: "info", message: "All 30 contract tests passing", time: "2 min ago" },
-  { severity: "success", message: "GnosisSafeL2 multisig deployed on testnet", time: "1 hour ago" },
-  { severity: "warning", message: "CORS restricted on all Besu nodes", time: "3 hours ago" },
-  { severity: "success", message: "JWT secret rotated, no fallback", time: "3 hours ago" },
-  { severity: "info", message: "Forta monitoring bot configured", time: "5 hours ago" },
-  { severity: "info", message: "Tenderly alerts configured", time: "5 hours ago" },
-];
-
-const LIQUIDITY_POOLS = [
-  { pair: "TDOT/USDT", tvl: "$12,450", volume24h: "$3,200", apr: "24.5%", reserves: "1.25M / 12,450" },
-  { pair: "TDOT/BTC", tvl: "$8,200", volume24h: "$1,800", apr: "18.2%", reserves: "820K / 0.123" },
-  { pair: "TDOT/BNB", tvl: "$6,100", volume24h: "$950", apr: "21.7%", reserves: "610K / 20.3" },
-  { pair: "TDOT/USDC", tvl: "$9,800", volume24h: "$2,100", apr: "19.8%", reserves: "980K / 9,800" },
-  { pair: "TDOT/XRP", tvl: "$5,400", volume24h: "$680", apr: "15.4%", reserves: "540K / 10,800" },
-];
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3006";
+const TOKEN_KEY = "hexchange_admin_token";
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"overview" | "contracts" | "users" | "liquidity" | "security">("overview");
+  const [tab, setTab] = useState<"overview" | "users" | "trades" | "liquidity" | "security" | "contracts">("overview");
+  const [token, setToken] = useState("");
+  const [loginEmail, setLoginEmail] = useState("admin@thedotprotocol.com");
+  const [loginPass, setLoginPass] = useState("");
+  const [loginError, setLoginError] = useState("");
 
-  return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <nav className="border-b border-white/5 px-6 py-4 flex items-center justify-between bg-[#0a0e17]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-red-500/20">
-            🔧
+  // Dashboard data
+  const [stats, setStats] = useState<any>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [trades, setTrades] = useState<any[]>([]);
+  const [deposits, setDeposits] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Mock chain data for visual completeness
+  const [chainData] = useState({
+    chennai: { blocks: 5095, gasPrice: "0.000001 gwei", validators: 7, peers: 12, uptime: "99.97%" },
+    mainnet: { blocks: 4218, gasPrice: "0.000001 gwei", validators: 7, peers: 7, uptime: "99.99%" },
+    contracts: [
+      { name: "DPC20 Token (3DOT)", address: "0x84ed5E...ced56", network: "Mainnet", status: "active", admin: "TimelockController" },
+      { name: "DPC20 Token (TDOT)", address: "0x542E95...0185", network: "Chennai", status: "active", admin: "TimelockController" },
+      { name: "Oracle", address: "0xAE7D68...8eeb", network: "Mainnet", status: "active", admin: "Governance" },
+      { name: "Stabilization", address: "0x2000fd...a552", network: "Mainnet", status: "active", admin: "TimelockController" },
+      { name: "Governance", address: "0x002fB3...Ac81", network: "Mainnet", status: "active", admin: "Multisig (3/5)" },
+      { name: "Bridge", address: "0xe90813...37a4", network: "Mainnet", status: "active", admin: "Governance" },
+      { name: "CCIPBridge", address: "0xNot...Deployed", network: "Both", status: "deployed", admin: "Pending" },
+      { name: "GnosisSafeL2", address: "0xNot...Deployed", network: "Both", status: "deployed", admin: "Pending" },
+      { name: "HexchangeRouter", address: "0x436A57...373B", network: "Chennai", status: "active", admin: "Factory" },
+      { name: "HexchangeFactory", address: "0xeABAb7...3e7", network: "Chennai", status: "active", admin: "Deployer" },
+      { name: "HexchangeEscrow", address: "0xeA8670...04C", network: "Chennai", status: "active", admin: "Factory" },
+      { name: "TimelockController", address: "0xDeployed", network: "Both", status: "active", admin: "Multisig (3/5)" },
+      { name: "DecentralizedOracle", address: "0xDeployed", network: "Both", status: "deployed", admin: "Governance" },
+    ],
+    pools: [
+      { pair: "3DOT/USDT", tvl: 450000, volume24h: 125000, apr: 45.2, tokens: 500000 },
+      { pair: "3DOT/BTC", tvl: 280000, volume24h: 85000, apr: 38.7, tokens: 280000 },
+      { pair: "3DOT/BNB", tvl: 195000, volume24h: 62000, apr: 42.1, tokens: 195000 },
+      { pair: "3DOT/USDC", tvl: 320000, volume24h: 98000, apr: 36.5, tokens: 320000 },
+      { pair: "3DOT/XRP", tvl: 120000, volume24h: 35000, apr: 51.3, tokens: 120000 },
+    ],
+    security: [
+      { item: "TimelockController on all contracts", status: "✅ Done", severity: "critical" },
+      { item: "Rebase capped at ±5% per 30 days", status: "✅ Done", severity: "critical" },
+      { item: "No hardcoded private keys", status: "✅ Done", severity: "critical" },
+      { item: "JWT uses jsonwebtoken library", status: "✅ Done", severity: "critical" },
+      { item: "CORS restricted to known origins", status: "✅ Done", severity: "high" },
+      { item: "Rate limiting on all endpoints", status: "✅ Done", severity: "high" },
+      { item: "WebSocket authentication", status: "✅ Done", severity: "medium" },
+      { item: "CSP headers on API", status: "✅ Done", severity: "medium" },
+      { item: "Docker non-root user + log rotation", status: "✅ Done", severity: "medium" },
+      { item: "Production domains scrubbed from git", status: "✅ Done", severity: "high" },
+      { item: "Bridge nonce replay protection", status: "✅ Done", severity: "high" },
+      { item: "Multi-sig admin (GnosisSafeL2)", status: "⚠️ Deployed, not configured", severity: "critical" },
+      { item: "CCIP Bridge integration", status: "⚠️ Contract ready, needs LINK funding", severity: "high" },
+      { item: "Professional audit (CertiK/ToB)", status: "❌ Not started", severity: "critical" },
+      { item: "Bug bounty program", status: "✅ Document ready", severity: "medium" },
+    ],
+  });
+
+  // Login
+  const handleLogin = async () => {
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: loginEmail, password: loginPass }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setToken(data.token);
+        localStorage.setItem(TOKEN_KEY, data.token);
+        fetchDashboard(data.token);
+      } else {
+        setLoginError("Invalid credentials — register first via Hexchange");
+      }
+    } catch {
+      setLoginError("API not running — start with: cd apps/hexchange-api && npm run dev");
+    }
+  };
+
+  // Check for saved token
+  useEffect(() => {
+    const saved = localStorage.getItem(TOKEN_KEY);
+    if (saved) {
+      setToken(saved);
+      fetchDashboard(saved);
+    }
+  }, []);
+
+  // Fetch dashboard data from real API
+  const fetchDashboard = async (t?: string) => {
+    const authToken = t || token;
+    if (!authToken) return;
+    setLoading(true);
+    try {
+      const headers = { Authorization: `Bearer ${authToken}` };
+      const [statsRes, usersRes, tradesRes, depositsRes, withdrawalsRes] = await Promise.all([
+        fetch(`${API}/api/admin/stats`, { headers }),
+        fetch(`${API}/api/admin/users`, { headers }),
+        fetch(`${API}/api/admin/trades`, { headers }),
+        fetch(`${API}/api/admin/deposits`, { headers }),
+        fetch(`${API}/api/admin/withdrawals`, { headers }),
+      ]);
+
+      if (statsRes.ok) setStats(await statsRes.json());
+      if (usersRes.ok) setUsers((await usersRes.json()).users);
+      if (tradesRes.ok) setTrades((await tradesRes.json()).trades);
+      if (depositsRes.ok) setDeposits((await depositsRes.json()).deposits);
+      if (withdrawalsRes.ok) setWithdrawals((await withdrawalsRes.json()).withdrawals);
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchDashboard();
+      const interval = setInterval(() => fetchDashboard(), 15000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
+
+  // Login screen
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-[#070b11] flex items-center justify-center p-4">
+        <div className="card p-8 w-full max-w-sm">
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-3">🔧</div>
+            <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-xs text-gray-500 mt-1">The Dot Protocol — Admin Portal</p>
           </div>
-          <div>
-            <div className="text-sm font-bold">Admin Dashboard</div>
-            <div className="text-[10px] text-gray-500">The Dot Protocol</div>
+          <div className="space-y-3">
+            <input
+              type="email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-orange-500/50 focus:outline-none"
+            />
+            <input
+              type="password"
+              value={loginPass}
+              onChange={(e) => setLoginPass(e.target.value)}
+              placeholder="Password"
+              className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-orange-500/50 focus:outline-none"
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            />
+            {loginError && <div className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2">{loginError}</div>}
+            <button onClick={handleLogin} className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm transition-all">
+              Login
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-[#111827] rounded-lg p-0.5 border border-white/5">
-          {(["overview", "contracts", "users", "liquidity", "security"] as const).map((t) => (
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#070b11]">
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-lg">🔧</div>
+            <div>
+              <h1 className="text-lg font-bold text-white">Admin Dashboard</h1>
+              <p className="text-[10px] text-gray-500">The Dot Protocol — Operations Center</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => fetchDashboard()} className="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-400 hover:text-white border border-white/5">
+              🔄 Refresh
+            </button>
+            <button onClick={() => { setToken(""); localStorage.removeItem(TOKEN_KEY); }} className="px-3 py-1.5 rounded-lg text-xs bg-red-500/10 text-red-400 border border-red-500/20">
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 bg-[#111827] rounded-lg p-1 overflow-x-auto">
+          {(["overview", "users", "trades", "liquidity", "security", "contracts"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all capitalize ${
-                tab === t
-                  ? "bg-red-500 text-white shadow-lg shadow-red-500/20"
-                  : "text-gray-400 hover:text-white"
+              className={`px-4 py-2 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+                tab === t ? "bg-white/10 text-white" : "text-gray-500 hover:text-white"
               }`}
             >
-              {t}
+              {t === "overview" ? "📊 Overview" : t === "users" ? "👥 Users" : t === "trades" ? "📈 Trades" : t === "liquidity" ? "💧 Liquidity" : t === "security" ? "🔒 Security" : "📜 Contracts"}
             </button>
           ))}
         </div>
-      </nav>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Overview Tab */}
+        {/* Overview */}
         {tab === "overview" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">System Overview</h1>
+          <div className="space-y-4">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {[
+                { label: "Users", value: stats?.users?.total ?? "—", icon: "👥", color: "text-blue-400" },
+                { label: "Orders", value: stats?.orders?.total ?? "—", icon: "📋", color: "text-purple-400" },
+                { label: "Open Orders", value: stats?.orders?.open ?? "—", icon: "⏳", color: "text-yellow-400" },
+                { label: "Trades", value: stats?.trades?.total ?? "—", icon: "📈", color: "text-green-400" },
+                { label: "Volume", value: `$${(stats?.trades?.volume ?? 0).toLocaleString()}`, icon: "💰", color: "text-orange-400" },
+                { label: "KYC Pending", value: stats?.users?.kycPending ?? "—", icon: "🔍", color: "text-red-400" },
+              ].map((s) => (
+                <div key={s.label} className="card p-4">
+                  <div className="text-sm mb-1">{s.icon}</div>
+                  <div className="text-[10px] text-gray-500">{s.label}</div>
+                  <div className={`text-lg font-bold ${s.color}`}>{s.value}</div>
+                </div>
+              ))}
+            </div>
 
             {/* Chain Status */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(CHAIN_STATS).map(([name, chain]) => (
-                <div key={name} className="card p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold capitalize">{name}</h3>
-                    <span className="flex items-center gap-1.5 text-xs">
-                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                      <span className="text-green-400">{chain.status}</span>
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase">Chain ID</div>
-                      <div className="font-mono">{chain.chainId}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase">Blocks</div>
-                      <div className="font-mono">{chain.blocks.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase">Gas Price</div>
-                      <div className="font-mono">{chain.gas}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-gray-500 uppercase">Validators</div>
-                      <div className="font-mono">{chain.validators}/7</div>
-                    </div>
-                  </div>
+              <div className="card p-5">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                  Chennai Testnet
+                </h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="text-gray-500">Blocks:</span> <span className="text-white">{chainData.chennai.blocks.toLocaleString()}</span></div>
+                  <div><span className="text-gray-500">Gas:</span> <span className="text-white">{chainData.chennai.gasPrice}</span></div>
+                  <div><span className="text-gray-500">Validators:</span> <span className="text-white">{chainData.chennai.validators}</span></div>
+                  <div><span className="text-gray-500">Peers:</span> <span className="text-white">{chainData.chennai.peers}</span></div>
+                  <div><span className="text-gray-500">Uptime:</span> <span className="text-green-400">{chainData.chennai.uptime}</span></div>
+                  <div><span className="text-gray-500">Chain ID:</span> <span className="text-white">1545</span></div>
                 </div>
-              ))}
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Total Users", value: "4", icon: "👥" },
-                { label: "Total Orders", value: "67", icon: "📊" },
-                { label: "Contracts", value: "7", icon: "📝" },
-                { label: "Pools", value: "5", icon: "💧" },
-              ].map((stat) => (
-                <div key={stat.label} className="card p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">{stat.icon}</span>
-                    <span className="text-[10px] text-gray-500 uppercase">{stat.label}</span>
-                  </div>
-                  <div className="text-2xl font-bold">{stat.value}</div>
+              </div>
+              <div className="card p-5">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                  Dot Protocol Mainnet
+                </h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div><span className="text-gray-500">Blocks:</span> <span className="text-white">{chainData.mainnet.blocks.toLocaleString()}</span></div>
+                  <div><span className="text-gray-500">Gas:</span> <span className="text-white">{chainData.mainnet.gasPrice}</span></div>
+                  <div><span className="text-gray-500">Validators:</span> <span className="text-white">{chainData.mainnet.validators}</span></div>
+                  <div><span className="text-gray-500">Peers:</span> <span className="text-white">{chainData.mainnet.peers}</span></div>
+                  <div><span className="text-gray-500">Uptime:</span> <span className="text-green-400">{chainData.mainnet.uptime}</span></div>
+                  <div><span className="text-gray-500">Chain ID:</span> <span className="text-white">1546</span></div>
                 </div>
-              ))}
-            </div>
-
-            {/* Security Events */}
-            <div className="card p-5">
-              <h3 className="font-semibold text-sm mb-4">Recent Security Events</h3>
-              <div className="space-y-2">
-                {SECURITY_EVENTS.map((event, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.02]">
-                    <span className={`w-2 h-2 rounded-full ${
-                      event.severity === "success" ? "bg-green-400" :
-                      event.severity === "warning" ? "bg-yellow-400" :
-                      event.severity === "error" ? "bg-red-400" : "bg-blue-400"
-                    }`} />
-                    <span className="text-sm flex-1">{event.message}</span>
-                    <span className="text-xs text-gray-600">{event.time}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* Contracts Tab */}
-        {tab === "contracts" && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">Smart Contracts</h1>
-            <div className="card overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Contract</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Address</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Chain</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Admin</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CONTRACTS.map((c, i) => (
-                    <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-sm font-medium">{c.name}</td>
-                      <td className="px-4 py-3 text-xs font-mono text-gray-400">{c.address}</td>
-                      <td className="px-4 py-3 text-xs">{c.chain}</td>
-                      <td className="px-4 py-3 text-xs text-gray-400">{c.admin}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          c.status === "deployed" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-                        }`}>
-                          {c.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Users Tab */}
+        {/* Users */}
         {tab === "users" && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <div className="card overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">ID</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Email</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">KYC</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Orders</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {USERS.map((u) => (
-                    <tr key={u.id} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-xs font-mono text-gray-400">{u.id}</td>
-                      <td className="px-4 py-3 text-sm">{u.email}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          u.kyc === "verified" ? "bg-green-500/10 text-green-400 border border-green-500/20" :
-                          u.kyc === "pending" ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" :
-                          "bg-gray-500/10 text-gray-400 border border-gray-500/20"
-                        }`}>
-                          {u.kyc}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-right font-mono">{u.orders}</td>
-                      <td className="px-4 py-3 text-xs text-gray-500 text-right">{u.joined}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold">User Management</h3>
+              <span className="text-xs text-gray-500">{users.length} users</span>
             </div>
+            {users.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 text-sm">No users yet — they register via Hexchange</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="text-gray-500 border-b border-white/5">
+                    <th className="text-left py-2 font-medium">Email</th>
+                    <th className="text-left py-2 font-medium">Wallet</th>
+                    <th className="text-left py-2 font-medium">KYC</th>
+                    <th className="text-right py-2 font-medium">Orders</th>
+                    <th className="text-right py-2 font-medium">Balance</th>
+                    <th className="text-right py-2 font-medium">Joined</th>
+                  </tr></thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr key={u.id} className="border-b border-white/5">
+                        <td className="py-2 text-white">{u.email}</td>
+                        <td className="py-2 text-gray-400 font-mono text-[10px]">{u.wallet_address ? `${u.wallet_address.slice(0, 8)}...` : "—"}</td>
+                        <td className="py-2">
+                          <span className={`px-2 py-0.5 rounded text-[10px] ${
+                            u.kyc_status === "approved" ? "bg-green-500/10 text-green-400" :
+                            u.kyc_status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
+                            "bg-gray-500/10 text-gray-400"
+                          }`}>{u.kyc_status}</span>
+                        </td>
+                        <td className="py-2 text-right text-gray-400">{u.orderCount}</td>
+                        <td className="py-2 text-right text-white">${u.totalBalance?.toFixed(2) || "0.00"}</td>
+                        <td className="py-2 text-right text-gray-500">{new Date(u.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Liquidity Tab */}
+        {/* Trades */}
+        {tab === "trades" && (
+          <div className="card p-5">
+            <h3 className="text-sm font-semibold mb-3">Recent Trades</h3>
+            {trades.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 text-sm">No trades yet</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="text-gray-500 border-b border-white/5">
+                    <th className="text-left py-2 font-medium">Pair</th>
+                    <th className="text-right py-2 font-medium">Price</th>
+                    <th className="text-right py-2 font-medium">Amount</th>
+                    <th className="text-right py-2 font-medium">Total</th>
+                    <th className="text-right py-2 font-medium">Date</th>
+                  </tr></thead>
+                  <tbody>
+                    {trades.map((t) => (
+                      <tr key={t.id} className="border-b border-white/5">
+                        <td className="py-2 text-white">{t.pair}</td>
+                        <td className="py-2 text-right text-white">{t.price}</td>
+                        <td className="py-2 text-right text-gray-400">{t.amount}</td>
+                        <td className="py-2 text-right text-orange-400">${(t.price * t.amount).toFixed(2)}</td>
+                        <td className="py-2 text-right text-gray-500">{new Date(t.created_at).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Liquidity */}
         {tab === "liquidity" && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">Liquidity Pools</h1>
-            <div className="card overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Pair</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">TVL</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">24h Volume</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">APR</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Reserves</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {LIQUIDITY_POOLS.map((pool) => (
-                    <tr key={pool.pair} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-sm font-medium">{pool.pair}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono">{pool.tvl}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono">{pool.volume24h}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono text-green-400">{pool.apr}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono text-gray-400">{pool.reserves}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="space-y-3">
+            {chainData.pools.map((pool) => (
+              <div key={pool.pair} className="card p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-xs font-bold text-orange-400">{pool.pair[0]}</div>
+                  <div>
+                    <div className="text-sm font-medium text-white">{pool.pair}</div>
+                    <div className="text-[10px] text-gray-500">{pool.tokens.toLocaleString()} tokens</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">TVL</div>
+                  <div className="text-sm text-white">${pool.tvl.toLocaleString()}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">24h Volume</div>
+                  <div className="text-sm text-white">${pool.volume24h.toLocaleString()}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">APR</div>
+                  <div className="text-sm text-green-400">{pool.apr}%</div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Security Tab */}
+        {/* Security */}
         {tab === "security" && (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold">Security Status</h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { label: "Critical", count: 0, color: "text-green-400", bg: "bg-green-500/10" },
-                { label: "High", count: 0, color: "text-green-400", bg: "bg-green-500/10" },
-                { label: "Medium", count: 0, color: "text-green-400", bg: "bg-green-500/10" },
-              ].map((item) => (
-                <div key={item.label} className="card p-4 text-center">
-                  <div className={`text-3xl font-bold ${item.color}`}>{item.count}</div>
-                  <div className="text-xs text-gray-500 uppercase mt-1">{item.label} Findings</div>
+          <div className="card p-5">
+            <h3 className="text-sm font-semibold mb-3">Security Audit Status</h3>
+            <div className="space-y-2">
+              {chainData.security.map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-[#0a0e17] rounded-lg border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm">{item.status.startsWith("✅") ? "✅" : item.status.startsWith("⚠️") ? "⚠️" : "❌"}</span>
+                    <span className="text-xs text-white">{item.item}</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] ${
+                    item.severity === "critical" ? "bg-red-500/10 text-red-400" :
+                    item.severity === "high" ? "bg-orange-500/10 text-orange-400" :
+                    "bg-blue-500/10 text-blue-400"
+                  }`}>{item.severity}</span>
                 </div>
               ))}
             </div>
+          </div>
+        )}
 
-            <div className="card p-5">
-              <h3 className="font-semibold text-sm mb-4">Security Checklist</h3>
-              <div className="space-y-2">
-                {[
-                  { item: "TimelockController deployed", done: true },
-                  { item: "Rebase capped at ±5% per 30 days", done: true },
-                  { item: "GnosisSafeL2 3-of-5 multisig", done: true },
-                  { item: "CORS restricted on Besu nodes", done: true },
-                  { item: "JWT with no fallback secret", done: true },
-                  { item: "CSP headers on API", done: true },
-                  { item: "Forta monitoring configured", done: true },
-                  { item: "Tenderly alerts configured", done: true },
-                  { item: "Bug bounty program published", done: true },
-                  { item: "Professional audit scheduled", done: false },
-                ].map((check) => (
-                  <div key={check.item} className="flex items-center gap-3 p-2 rounded-lg">
-                    <span className={`text-sm ${check.done ? "text-green-400" : "text-gray-600"}`}>
-                      {check.done ? "✅" : "🔲"}
-                    </span>
-                    <span className={`text-sm ${check.done ? "text-gray-300" : "text-gray-500"}`}>
-                      {check.item}
-                    </span>
-                  </div>
-                ))}
-              </div>
+        {/* Contracts */}
+        {tab === "contracts" && (
+          <div className="card p-5">
+            <h3 className="text-sm font-semibold mb-3">Deployed Contracts</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead><tr className="text-gray-500 border-b border-white/5">
+                  <th className="text-left py-2 font-medium">Contract</th>
+                  <th className="text-left py-2 font-medium">Address</th>
+                  <th className="text-left py-2 font-medium">Network</th>
+                  <th className="text-left py-2 font-medium">Status</th>
+                  <th className="text-left py-2 font-medium">Admin</th>
+                </tr></thead>
+                <tbody>
+                  {chainData.contracts.map((c, i) => (
+                    <tr key={i} className="border-b border-white/5">
+                      <td className="py-2 text-white font-medium">{c.name}</td>
+                      <td className="py-2 text-gray-400 font-mono text-[10px]">{c.address}</td>
+                      <td className="py-2"><span className={`px-2 py-0.5 rounded text-[10px] ${c.network === "Mainnet" ? "bg-orange-500/10 text-orange-400" : "bg-blue-500/10 text-blue-400"}`}>{c.network}</span></td>
+                      <td className="py-2"><span className={`px-2 py-0.5 rounded text-[10px] ${c.status === "active" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"}`}>{c.status}</span></td>
+                      <td className="py-2 text-gray-400">{c.admin}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

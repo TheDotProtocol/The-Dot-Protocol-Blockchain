@@ -1,283 +1,397 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { ethers } from "ethers";
 
-const TRANSACTIONS = [
-  { id: "TX001", customer: "0x742d...2bD18", amount: "250.00 USDT", status: "completed", time: "2 min ago", product: "Premium Plan" },
-  { id: "TX002", customer: "0x1234...5678", amount: "12.50 3DOT", status: "completed", time: "15 min ago", product: "Coffee x5" },
-  { id: "TX003", customer: "0xabcd...ef01", amount: "100.00 USDC", status: "pending", time: "1 hour ago", product: "Annual Sub" },
-  { id: "TX004", customer: "0x9876...5432", amount: "0.005 BTC", status: "completed", time: "3 hours ago", product: "Hardware Wallet" },
-  { id: "TX005", customer: "0xdead...beef", amount: "50.00 3DOT", status: "completed", time: "1 day ago", product: "T-Shirt" },
+const TOKENS = [
+  { symbol: "3DOT", color: "#f97316" },
+  { symbol: "USDT", color: "#26a17b" },
+  { symbol: "USDC", color: "#2775ca" },
+  { symbol: "BTC", color: "#f7931a" },
+  { symbol: "BNB", color: "#f3ba2f" },
+  { symbol: "XRP", color: "#00aae4" },
 ];
 
-const STATS = [
-  { label: "Today's Revenue", value: "$1,250", change: "+18.2%", up: true },
-  { label: "This Week", value: "$8,400", change: "+12.5%", up: true },
-  { label: "This Month", value: "$32,100", change: "+8.3%", up: true },
-  { label: "Total Transactions", value: "1,247", change: "+24 today", up: true },
-];
+interface PaymentLink {
+  id: string;
+  amount: string;
+  token: string;
+  description: string;
+  status: "pending" | "paid" | "expired";
+  address: string;
+  createdAt: string;
+}
+
+interface MerchantSettings {
+  businessName: string;
+  walletAddress: string;
+  webhookUrl: string;
+  acceptedTokens: string[];
+}
 
 export default function PayPage() {
-  const [tab, setTab] = useState<"dashboard" | "create" | "transactions" | "settings">("dashboard");
-  const [payAmount, setPayAmount] = useState("");
-  const [payDescription, setPayDescription] = useState("");
+  const [tab, setTab] = useState<"dashboard" | "create" | "links" | "settings">("dashboard");
+  const [address, setAddress] = useState("");
+  const [connecting, setConnecting] = useState(false);
+
+  // Merchant settings
+  const [settings, setSettings] = useState<MerchantSettings>({
+    businessName: "",
+    walletAddress: "",
+    webhookUrl: "",
+    acceptedTokens: ["3DOT", "USDT", "USDC"],
+  });
+
+  // Payment link creation
+  const [amount, setAmount] = useState("");
+  const [token, setToken] = useState("3DOT");
+  const [description, setDescription] = useState("");
+  const [creating, setCreating] = useState(false);
+
+  // Payment links
+  const [links, setLinks] = useState<PaymentLink[]>([]);
+
+  // Dashboard stats
+  const [stats, setStats] = useState({
+    totalReceived: 0,
+    todayReceived: 0,
+    totalPayments: 0,
+    todayPayments: 0,
+    avgPayment: 0,
+  });
+
+  // Recent transactions
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  const connect = async () => {
+    if (!(window as any).ethereum) { alert("Install MetaMask"); return; }
+    setConnecting(true);
+    try {
+      const p = new ethers.BrowserProvider((window as any).ethereum);
+      await p.send("eth_requestAccounts", []);
+      const s = await p.getSigner();
+      const addr = await s.getAddress();
+      setAddress(addr);
+      setSettings(prev => ({ ...prev, walletAddress: addr }));
+    } catch (e) { console.error(e); }
+    setConnecting(false);
+  };
+
+  useEffect(() => { connect(); }, []);
+
+  // Load dashboard data (in production: fetch from API)
+  useEffect(() => {
+    if (!address) return;
+
+    // Simulate real merchant data
+    const mockLinks: PaymentLink[] = [
+      { id: "PL001", amount: "250", token: "3DOT", description: "Invoice #INV-2026-001", status: "paid", address: "0x742d...5b8c", createdAt: new Date(Date.now() - 3600000).toISOString() },
+      { id: "PL002", amount: "1000", token: "3DOT", description: "Product Order #ORD-4521", status: "paid", address: "0x742d...5b8c", createdAt: new Date(Date.now() - 7200000).toISOString() },
+      { id: "PL003", amount: "50", token: "USDT", description: "Service subscription - Monthly", status: "pending", address: "0x742d...5b8c", createdAt: new Date(Date.now() - 1800000).toISOString() },
+      { id: "PL004", amount: "500", token: "3DOT", description: "Consulting fee", status: "paid", address: "0x742d...5b8c", createdAt: new Date(Date.now() - 86400000).toISOString() },
+      { id: "PL005", amount: "200", token: "USDC", description: "License renewal", status: "expired", address: "0x742d...5b8c", createdAt: new Date(Date.now() - 604800000).toISOString() },
+    ];
+    setLinks(mockLinks);
+
+    setStats({
+      totalReceived: 12500,
+      todayReceived: 1300,
+      totalPayments: 156,
+      todayPayments: 12,
+      avgPayment: 80.13,
+    });
+
+    setTransactions([
+      { hash: "0xabc1...def1", from: "0x1234...5678", amount: "250", token: "3DOT", status: "confirmed", time: "2 min ago" },
+      { hash: "0xabc2...def2", from: "0x9876...5432", amount: "100", token: "USDT", status: "confirmed", time: "15 min ago" },
+      { hash: "0xabc3...def3", from: "0xaaaa...bbbb", amount: "500", token: "3DOT", status: "pending", time: "1 hour ago" },
+      { hash: "0xabc4...def4", from: "0xcccc...dddd", amount: "50", token: "USDC", status: "confirmed", time: "3 hours ago" },
+      { hash: "0xabc5...def5", from: "0x1111...2222", amount: "200", token: "3DOT", status: "confirmed", time: "Yesterday" },
+    ]);
+  }, [address]);
+
+  // Create payment link
+  const handleCreateLink = async () => {
+    if (!amount || !settings.walletAddress) return;
+    setCreating(true);
+
+    // In production: POST to API to create payment link
+    const newLink: PaymentLink = {
+      id: `PL${String(links.length + 1).padStart(3, "0")}`,
+      amount,
+      token,
+      description: description || "Payment",
+      status: "pending",
+      address: settings.walletAddress,
+      createdAt: new Date().toISOString(),
+    };
+
+    setTimeout(() => {
+      setLinks(prev => [newLink, ...prev]);
+      setAmount("");
+      setDescription("");
+      setCreating(false);
+      setTab("links");
+    }, 500);
+  };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <nav className="border-b border-white/5 px-6 py-4 flex items-center justify-between bg-[#0a0e17]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-blue-500/20">
-            3P
+    <div className="min-h-screen bg-[#070b11]">
+      <div className="max-w-5xl mx-auto p-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-lg">💳</div>
+            <div>
+              <h1 className="text-lg font-bold text-white">3Dot Pay</h1>
+              <p className="text-[10px] text-gray-500">Merchant payment gateway — Accept crypto payments</p>
+            </div>
           </div>
-          <div>
-            <div className="text-sm font-bold">3Dot Pay</div>
-            <div className="text-[10px] text-gray-500">Crypto Payment Gateway</div>
-          </div>
+          {address && (
+            <div className="text-right">
+              <div className="text-xs text-white">{address.slice(0, 6)}...{address.slice(-4)}</div>
+              {settings.businessName && <div className="text-[10px] text-gray-500">{settings.businessName}</div>}
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-1 bg-[#111827] rounded-lg p-0.5 border border-white/5">
-          {(["dashboard", "create", "transactions", "settings"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all capitalize ${
-                tab === t
-                  ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              {t}
+
+        {!address ? (
+          <div className="card p-8 text-center">
+            <div className="text-4xl mb-4">💳</div>
+            <h2 className="text-lg font-bold text-white mb-2">Connect Your Wallet</h2>
+            <p className="text-sm text-gray-500 mb-4">Connect MetaMask to set up your merchant payment gateway</p>
+            <button onClick={connect} disabled={connecting} className="px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm transition-all">
+              {connecting ? "Connecting..." : "Connect MetaMask"}
             </button>
-          ))}
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Dashboard Tab */}
-        {tab === "dashboard" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Merchant Dashboard</h1>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="card p-4">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">{stat.label}</div>
-                  <div className="text-xl font-bold">{stat.value}</div>
-                  <div className={`text-xs mt-1 ${stat.up ? "text-green-400" : "text-red-400"}`}>{stat.change}</div>
-                </div>
+          </div>
+        ) : (
+          <>
+            {/* Tabs */}
+            <div className="flex gap-1 mb-6 bg-[#111827] rounded-lg p-1">
+              {(["dashboard", "create", "links", "settings"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`flex-1 py-2 rounded-md text-xs font-medium transition-all ${
+                    tab === t ? "bg-white/10 text-white" : "text-gray-500 hover:text-white"
+                  }`}
+                >
+                  {t === "dashboard" ? "📊 Dashboard" : t === "create" ? "➕ Create Link" : t === "links" ? "🔗 My Links" : "⚙️ Settings"}
+                </button>
               ))}
             </div>
 
-            {/* Quick Create Payment */}
-            <div className="card p-6">
-              <h3 className="font-semibold mb-4">Quick Payment Request</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Amount</label>
-                  <input
-                    type="number"
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
-                  />
+            {/* Dashboard */}
+            {tab === "dashboard" && (
+              <div className="space-y-4">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Total Received", value: `$${stats.totalReceived.toLocaleString()}`, icon: "💰" },
+                    { label: "Today", value: `$${stats.todayReceived.toLocaleString()}`, icon: "📈" },
+                    { label: "Total Payments", value: stats.totalPayments.toString(), icon: "📊" },
+                    { label: "Avg Payment", value: `$${stats.avgPayment.toFixed(2)}`, icon: "📋" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="card p-4">
+                      <div className="text-lg mb-1">{stat.icon}</div>
+                      <div className="text-[10px] text-gray-500">{stat.label}</div>
+                      <div className="text-lg font-bold text-white">{stat.value}</div>
+                    </div>
+                  ))}
                 </div>
-                <div>
+
+                {/* Recent Transactions */}
+                <div className="card p-5">
+                  <h3 className="text-sm font-semibold mb-3">Recent Payments</h3>
+                  <div className="space-y-2">
+                    {transactions.map((tx, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-[#0a0e17] rounded-lg border border-white/5">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${tx.status === "confirmed" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"}`}>
+                            {tx.status === "confirmed" ? "✓" : "⏳"}
+                          </div>
+                          <div>
+                            <div className="text-xs text-white">{tx.amount} {tx.token}</div>
+                            <div className="text-[10px] text-gray-500">From {tx.from}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-400">{tx.time}</div>
+                          <div className={`text-[10px] ${tx.status === "confirmed" ? "text-green-400" : "text-yellow-400"}`}>{tx.status}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Create Payment Link */}
+            {tab === "create" && (
+              <div className="card p-5 max-w-lg">
+                <h3 className="text-sm font-semibold mb-4">Create Payment Link</h3>
+
+                <div className="mb-3">
+                  <label className="text-xs text-gray-500 mb-1 block">Amount</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="flex-1 bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
+                    />
+                    <select
+                      value={token}
+                      onChange={(e) => setToken(e.target.value)}
+                      className="bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white"
+                    >
+                      {TOKENS.map(t => <option key={t.symbol} value={t.symbol}>{t.symbol}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mb-3">
                   <label className="text-xs text-gray-500 mb-1 block">Description</label>
                   <input
                     type="text"
-                    value={payDescription}
-                    onChange={(e) => setPayDescription(e.target.value)}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     placeholder="e.g. Invoice #1234"
                     className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
                   />
                 </div>
-                <div className="flex items-end">
-                  <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-blue-500/20">
-                    Generate Payment Link
-                  </button>
+
+                <div className="mb-3">
+                  <label className="text-xs text-gray-500 mb-1 block">Receiving Wallet</label>
+                  <div className="bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-xs text-gray-400 font-mono">
+                    {settings.walletAddress || "Connect wallet first"}
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Recent Transactions */}
-            <div className="card overflow-hidden">
-              <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                <h3 className="font-semibold text-sm">Recent Transactions</h3>
-                <button onClick={() => setTab("transactions")} className="text-xs text-blue-400 hover:text-blue-300">View All →</button>
-              </div>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-2">ID</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-2">Customer</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-2">Product</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-2">Amount</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-2">Status</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-2">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {TRANSACTIONS.map((tx) => (
-                    <tr key={tx.id} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-xs font-mono text-gray-400">{tx.id}</td>
-                      <td className="px-4 py-3 text-xs font-mono">{tx.customer}</td>
-                      <td className="px-4 py-3 text-xs">{tx.product}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono">{tx.amount}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          tx.status === "completed" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-                        }`}>
-                          {tx.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-500 text-right">{tx.time}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Create Payment Tab */}
-        {tab === "create" && (
-          <div className="max-w-md mx-auto space-y-6">
-            <h1 className="text-2xl font-bold text-center">Create Payment</h1>
-
-            <div className="card p-6">
-              {/* QR Code */}
-              <div className="w-48 h-48 mx-auto bg-white rounded-2xl mb-6 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl mb-2">💳</div>
-                  <div className="text-xs text-gray-400 font-mono">Payment QR</div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Amount</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Currency</label>
-                  <div className="flex gap-2">
-                    {["3DOT", "USDT", "USDC", "BTC"].map((c) => (
-                      <button key={c} className="flex-1 py-2 rounded-lg text-xs font-medium bg-[#111827] text-gray-400 border border-white/5 hover:text-white transition-colors">
-                        {c}
+                <div className="mb-4">
+                  <label className="text-xs text-gray-500 mb-1 block">Accepted Tokens</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TOKENS.map(t => (
+                      <button
+                        key={t.symbol}
+                        onClick={() => {
+                          setSettings(prev => ({
+                            ...prev,
+                            acceptedTokens: prev.acceptedTokens.includes(t.symbol)
+                              ? prev.acceptedTokens.filter(s => s !== t.symbol)
+                              : [...prev.acceptedTokens, t.symbol],
+                          }));
+                        }}
+                        className={`px-2 py-1 rounded text-[10px] font-medium border transition-all ${
+                          settings.acceptedTokens.includes(t.symbol)
+                            ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
+                            : "border-white/5 text-gray-500"
+                        }`}
+                      >
+                        {t.symbol}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Description</label>
-                  <input
-                    type="text"
-                    placeholder="Invoice or product name"
-                    className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
-                  />
-                </div>
-                <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-semibold text-sm mt-2">
-                  Create Payment Request
+
+                <button
+                  onClick={handleCreateLink}
+                  disabled={!amount || creating}
+                  className="w-full py-3 rounded-xl font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+                >
+                  {creating ? "Creating..." : "Create Payment Link"}
                 </button>
               </div>
-            </div>
+            )}
 
-            {/* Payment Link */}
-            <div className="card p-4">
-              <div className="text-xs text-gray-500 mb-2">Payment Link</div>
-              <div className="bg-[#0a0e17] rounded-lg p-3 text-xs font-mono text-gray-400 break-all">
-                https://pay.3dot.io/merchant/0xAA0b...9694/tx/TX001
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Transactions Tab */}
-        {tab === "transactions" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold">All Transactions</h1>
-              <button className="text-xs bg-[#111827] text-gray-400 px-3 py-1.5 rounded-lg border border-white/5 hover:text-white">
-                Export CSV
-              </button>
-            </div>
-            <div className="card overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">ID</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Customer</th>
-                    <th className="text-left text-[10px] text-gray-500 uppercase px-4 py-3">Product</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Amount</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Status</th>
-                    <th className="text-right text-[10px] text-gray-500 uppercase px-4 py-3">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {TRANSACTIONS.map((tx) => (
-                    <tr key={tx.id} className="border-b border-white/[0.03] hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 text-xs font-mono text-gray-400">{tx.id}</td>
-                      <td className="px-4 py-3 text-xs font-mono">{tx.customer}</td>
-                      <td className="px-4 py-3 text-xs">{tx.product}</td>
-                      <td className="px-4 py-3 text-xs text-right font-mono">{tx.amount}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          tx.status === "completed" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+            {/* My Links */}
+            {tab === "links" && (
+              <div className="space-y-3">
+                {links.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500 text-sm">No payment links yet</div>
+                ) : links.map((link) => (
+                  <div key={link.id} className="card p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${
+                          link.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          link.status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
+                          "bg-gray-500/10 text-gray-400"
                         }`}>
-                          {tx.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-500 text-right">{tx.time}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Settings Tab */}
-        {tab === "settings" && (
-          <div className="max-w-lg mx-auto space-y-6">
-            <h1 className="text-2xl font-bold">Merchant Settings</h1>
-
-            <div className="card p-6 space-y-4">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Business Name</label>
-                <input type="text" defaultValue="The Dot Protocol" className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white focus:border-blue-500/50 focus:outline-none" />
+                          {link.status === "paid" ? "✓" : link.status === "pending" ? "⏳" : "✕"}
+                        </div>
+                        <div>
+                          <div className="text-sm text-white">{link.amount} {link.token}</div>
+                          <div className="text-[10px] text-gray-500">{link.description}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-0.5 rounded text-[10px] ${
+                          link.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          link.status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
+                          "bg-gray-500/10 text-gray-400"
+                        }`}>{link.status}</span>
+                        <div className="text-[10px] text-gray-500 mt-1">{new Date(link.createdAt).toLocaleDateString()}</div>
+                      </div>
+                      {link.status === "pending" && (
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(`https://3dotpay.thedotprotocol.com/pay/${link.id}`); }}
+                          className="ml-3 px-2 py-1 rounded text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        >
+                          📋 Copy
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Settlement Wallet</label>
-                <input type="text" defaultValue="0xAA0bf607b14109A01e94a30674a01e2BA22e9694" className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white font-mono focus:border-blue-500/50 focus:outline-none" />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Accepted Tokens</label>
-                <div className="flex gap-2">
-                  {["3DOT", "USDT", "USDC", "BTC", "BNB"].map((t) => (
-                    <label key={t} className="flex items-center gap-2 bg-[#111827] px-3 py-2 rounded-lg border border-white/5 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="accent-blue-500" />
-                      <span className="text-xs">{t}</span>
-                    </label>
-                  ))}
+            )}
+
+            {/* Settings */}
+            {tab === "settings" && (
+              <div className="card p-5 max-w-lg">
+                <h3 className="text-sm font-semibold mb-4">Merchant Settings</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Business Name</label>
+                    <input
+                      type="text"
+                      value={settings.businessName}
+                      onChange={(e) => setSettings(prev => ({ ...prev, businessName: e.target.value }))}
+                      placeholder="Your Business Name"
+                      className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Receiving Wallet</label>
+                    <input
+                      type="text"
+                      value={settings.walletAddress}
+                      onChange={(e) => setSettings(prev => ({ ...prev, walletAddress: e.target.value }))}
+                      placeholder="0x..."
+                      className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Webhook URL (optional)</label>
+                    <input
+                      type="text"
+                      value={settings.webhookUrl}
+                      onChange={(e) => setSettings(prev => ({ ...prev, webhookUrl: e.target.value }))}
+                      placeholder="https://your-server.com/webhook"
+                      className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none"
+                    />
+                  </div>
+                  <button className="w-full py-3 rounded-xl font-semibold text-sm bg-blue-500 hover:bg-blue-600 text-white transition-all">
+                    Save Settings
+                  </button>
                 </div>
               </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Webhook URL</label>
-                <input type="text" placeholder="https://your-server.com/webhook" className="w-full bg-[#0a0e17] border border-white/5 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500/50 focus:outline-none" />
-              </div>
-              <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-semibold text-sm">
-                Save Settings
-              </button>
-            </div>
-          </div>
+            )}
+          </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

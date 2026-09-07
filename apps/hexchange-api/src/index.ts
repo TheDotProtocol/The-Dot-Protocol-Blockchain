@@ -6,6 +6,8 @@ import { createServer } from "http";
 import { orderBook, seedOrderBook } from "./engine";
 import { authMiddleware, optionalAuth, verifyToken } from "./middleware/auth";
 import authRoutes from "./routes/auth";
+const walletRoutes = require("./routes/wallet");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 3006;
@@ -18,13 +20,15 @@ const ALLOWED_ORIGINS = [
   "http://localhost:3003",
   "http://localhost:3005",
   "http://localhost:3006",
-  // Add production origins here when deploying:
-  // "https://hexchange.YOUR_DOMAIN.com",
-  // "https://YOUR_DOMAIN.com",
-  // "https://www.YOUR_DOMAIN.com",
-  // "https://presale.YOUR_DOMAIN.com",
-  // "https://wallet.YOUR_DOMAIN.com",
-  // "https://pay.YOUR_DOMAIN.com",
+  // Production domains
+  "https://hexchange.thedotprotocol.com",
+  "https://thedotprotocol.com",
+  "https://www.thedotprotocol.com",
+  "https://presale.thedotprotocol.com",
+  "https://wallet.thedotprotocol.com",
+  "https://3dotpay.thedotprotocol.com",
+  "https://explorer.thedotprotocol.com",
+  "https://admin.thedotprotocol.com",
 ];
 
 app.use(cors({
@@ -99,6 +103,8 @@ app.use("/api/auth", authLimiter);
 
 // ─── Auth Routes ────────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Seed order book with demo data
 seedOrderBook();
